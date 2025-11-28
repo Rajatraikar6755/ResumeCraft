@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  DndContext, 
+import {
+  DndContext,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
@@ -22,8 +22,8 @@ import { useResumeStore, Experience } from '@/stores/resumeStore';
 import { MagicWriter } from '@/components/ui/magic-writer';
 import { cn } from '@/lib/utils';
 
-function SortableExperienceCard({ 
-  experience, 
+function SortableExperienceCard({
+  experience,
   isExpanded,
   onToggle,
   onUpdate,
@@ -90,7 +90,7 @@ function SortableExperienceCard({
         >
           <GripVertical className="w-5 h-5" />
         </button>
-        
+
         <div className="flex-1 min-w-0">
           <h4 className="font-medium truncate">
             {experience.position || 'New Position'}
@@ -176,7 +176,7 @@ function SortableExperienceCard({
               {/* Bullet points */}
               <div className="space-y-3">
                 <label className="text-sm font-medium">Achievements & Responsibilities</label>
-                
+
                 {experience.bullets.map((bullet, index) => (
                   <div key={index} className="flex items-start gap-2 group">
                     <span className="text-muted-foreground mt-3">•</span>
@@ -247,8 +247,15 @@ export function ExperienceForm() {
   };
 
   const handleGenerateBullet = async (prompt: string): Promise<string> => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    return `Accomplished ${prompt} resulting in a 35% improvement in team productivity by implementing automated testing pipelines and CI/CD workflows.`;
+    try {
+      const { data } = await import('@/lib/api').then(m => m.generateContent(
+        `Write a professional resume bullet point based on this input. Use strong action verbs, quantify results if possible, and keep it concise. Input: "${prompt}"`
+      ));
+      return data.content;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to generate content');
+    }
   };
 
   return (

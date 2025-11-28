@@ -1,4 +1,8 @@
 import { create } from 'zustand';
+import { createResume, updateResume, getResume, getResumes, deleteResume as deleteResumeApi } from '@/lib/api';
+import { toast } from 'sonner';
+
+// ... (existing imports)
 
 export interface Experience {
   id: string;
@@ -30,6 +34,7 @@ export interface Project {
 
 export interface ResumeData {
   id: string;
+  title?: string;
   personalInfo: {
     fullName: string;
     email: string;
@@ -44,12 +49,14 @@ export interface ResumeData {
   education: Education[];
   projects: Project[];
   skills: string[];
-  template: 'modern' | 'classic' | 'minimal';
+  template: 'modern' | 'classic' | 'minimal' | 'creative';
   atsScore?: number;
+  createdAt?: string;
 }
 
 interface ResumeState {
   resume: ResumeData;
+  savedResumes: any[]; // You might want to define a stricter type here
   isGenerating: boolean;
   activeSection: string | null;
   setResume: (resume: Partial<ResumeData>) => void;
@@ -70,6 +77,11 @@ interface ResumeState {
   setIsGenerating: (generating: boolean) => void;
   setActiveSection: (section: string | null) => void;
   resetResume: () => void;
+  setAtsScore: (score: number) => void;
+  saveResume: (token: string, title?: string) => Promise<void>;
+  loadResume: (id: string, token: string) => Promise<void>;
+  fetchResumes: (token: string) => Promise<void>;
+  deleteResume: (id: string, token: string) => Promise<void>;
 }
 
 const initialResume: ResumeData = {
@@ -91,7 +103,7 @@ const initialResume: ResumeData = {
   template: 'modern',
 };
 
-export const useResumeStore = create<ResumeState>((set) => ({
+export const useResumeStore = create<ResumeState>((set, get) => ({
   resume: initialResume,
   isGenerating: false,
   activeSection: null,
@@ -203,5 +215,103 @@ export const useResumeStore = create<ResumeState>((set) => ({
 
   setActiveSection: (activeSection) => set({ activeSection }),
 
-  resetResume: () => set({ resume: initialResume }),
+  resetResume: () => set({
+    resume: {
+      ...initialResume,
+      id: crypto.randomUUID(),
+      createdAt: undefined // Ensure it's treated as a new resume
+    }
+  }),
+
+  setAtsScore: (score) => set((state) => ({ resume: { ...state.resume, atsScore: score } })),
+
+  saveResume: async (token, title) => {
+    const { resume } = get();
+    set({ isGenerating: true });
+    try {
+      const resumeData = {
+        ...resume,
+        title: title || resume.title || 'Untitled Resume',
+      };
+
+      let response;
+      if (resume.createdAt) {
+        // Update existing
+        response = await updateResume(resume.id, {
+          name: resumeData.title,
+          content: resumeData,
+          atsScore: resume.atsScore
+        }, token);
+      } else {
+        // Create new
+        response = await createResume({
+          name: resumeData.title,
+          content: resumeData,
+          atsScore: resume.atsScore
+        }, token);
+      }
+
+      set((state) => ({
+        resume: {
+          ...state.resume,
+          id: response.data.id,
+          createdAt: response.data.createdAt,
+          title: response.data.name
+        }
+      }));
+      toast.success('Resume saved successfully');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to save resume');
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+
+  loadResume: async (id, token) => {
+    set({ isGenerating: true });
+    try {
+      const { data } = await getResume(id, token);
+      const content = data.content as ResumeData;
+      set({
+        resume: {
+          ...content,
+          id: data.id,
+          title: data.name,
+          atsScore: data.atsScore,
+          createdAt: data.createdAt
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to load resume');
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+  savedResumes: [],
+  fetchResumes: async (token) => {
+    set({ isGenerating: true });
+    try {
+      const { data } = await getResumes(token);
+      set({ savedResumes: data });
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to fetch resumes');
+    } finally {
+      set({ isGenerating: false });
+    }
+  },
+  deleteResume: async (id, token) => {
+    try {
+      await deleteResumeApi(id, token);
+      set((state) => ({
+        savedResumes: state.savedResumes.filter((r) => r.id !== id),
+      }));
+      toast.success('Resume deleted successfully');
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to delete resume');
+    }
+  },
 }));

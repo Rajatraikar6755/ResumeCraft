@@ -8,6 +8,10 @@ import Editor from "./pages/Editor";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -18,7 +22,23 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/editor" element={<Editor />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/editor"
+            element={
+              <ProtectedRoute>
+                <Editor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/templates" element={<Templates />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

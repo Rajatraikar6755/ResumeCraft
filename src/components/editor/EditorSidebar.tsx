@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
-import { 
-  User, 
-  Briefcase, 
-  GraduationCap, 
-  Code, 
+import {
+  User,
+  Briefcase,
+  GraduationCap,
+  Code,
   Wrench,
   FileText,
-  ChevronRight
+  ChevronRight,
+  LayoutTemplate,
+  Upload
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -16,12 +18,14 @@ interface EditorSidebarProps {
 }
 
 const sections = [
+  { id: 'import', label: 'Import Resume', icon: Upload },
   { id: 'personal', label: 'Personal Info', icon: User },
   { id: 'summary', label: 'Summary', icon: FileText },
   { id: 'experience', label: 'Experience', icon: Briefcase },
   { id: 'education', label: 'Education', icon: GraduationCap },
   { id: 'projects', label: 'Projects', icon: Code },
   { id: 'skills', label: 'Skills', icon: Wrench },
+  { id: 'templates', label: 'Templates', icon: LayoutTemplate },
 ];
 
 export function EditorSidebar({ activeSection, onSectionChange }: EditorSidebarProps) {

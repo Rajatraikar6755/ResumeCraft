@@ -5,13 +5,17 @@ import { useResumeStore } from '@/stores/resumeStore';
 export function SummaryForm() {
   const { resume, setSummary } = useResumeStore();
 
-  // Simulated AI generation (replace with actual AI call when backend is connected)
+  // AI generation
   const handleGenerate = async (prompt: string): Promise<string> => {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    // This would be replaced with actual AI call
-    return `Results-driven software engineer with expertise in ${prompt}. Demonstrated track record of delivering high-impact solutions that improve efficiency by up to 40%. Passionate about building scalable systems and leading cross-functional teams to achieve ambitious goals.`;
+    try {
+      const { data } = await import('@/lib/api').then(m => m.generateContent(
+        `Rewrite the following professional summary for a resume. Keep it concise, professional, and impactful. Use action verbs. Text: "${prompt}"`
+      ));
+      return data.content;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to generate content');
+    }
   };
 
   return (

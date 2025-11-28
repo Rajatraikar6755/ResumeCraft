@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface MagicWriterProps {
@@ -27,20 +28,25 @@ export function MagicWriter({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleMagicGenerate = async () => {
-    if (!onGenerate || !value.trim() || isGenerating) return;
+    if (!onGenerate || isGenerating) return;
+
+    if (!value.trim()) {
+      toast.error("Please enter some text first to enhance it with AI");
+      return;
+    }
 
     setIsGenerating(true);
     setStreamedText('');
 
     try {
       const result = await onGenerate(value);
-      
+
       // Simulate streaming effect
       for (let i = 0; i <= result.length; i++) {
         await new Promise((resolve) => setTimeout(resolve, 15));
         setStreamedText(result.slice(0, i));
       }
-      
+
       onChange(result);
     } catch (error) {
       console.error('Generation failed:', error);
@@ -79,7 +85,7 @@ export function MagicWriter({
               'w-full bg-secondary/50 border border-border rounded-xl px-4 py-3 text-foreground',
               'placeholder:text-muted-foreground resize-none',
               'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50',
-              'transition-all duration-200',
+              'transition-all duration-200 relative z-10',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               isGenerating && 'font-mono text-sm'
             )}
@@ -96,12 +102,13 @@ export function MagicWriter({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleMagicGenerate}
-              disabled={isGenerating || !value.trim()}
+              disabled={isGenerating}
+              type="button"
               className={cn(
                 'absolute bottom-3 right-3 p-2 rounded-lg',
                 'bg-gradient-primary text-primary-foreground',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
-                'transition-all duration-200',
+                'transition-all duration-200 z-20',
                 'hover:shadow-glow'
               )}
             >

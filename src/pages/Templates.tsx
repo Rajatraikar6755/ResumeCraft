@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
 import { AnimatedBackground } from '@/components/ui/animated-background';
+import { useResumeStore } from '@/stores/resumeStore';
 
 const templates = [
   {
@@ -12,7 +13,7 @@ const templates = [
     description: 'Clean and contemporary design with subtle accents',
     popular: true,
     features: ['ATS-Optimized', 'Two-column layout', 'Skill bars'],
-    preview: 'linear-gradient(135deg, hsl(238 83% 67% / 0.1), hsl(280 80% 60% / 0.1))',
+    preview: '/templates/modern.png',
   },
   {
     id: 'classic',
@@ -20,7 +21,7 @@ const templates = [
     description: 'Traditional professional format trusted by recruiters',
     popular: false,
     features: ['ATS-Friendly', 'Single column', 'Serif typography'],
-    preview: 'linear-gradient(135deg, hsl(220 13% 15%), hsl(220 13% 10%))',
+    preview: '/templates/classic.png',
   },
   {
     id: 'minimal',
@@ -28,7 +29,7 @@ const templates = [
     description: 'Simple elegance with maximum readability',
     popular: false,
     features: ['Maximum compatibility', 'Clean spacing', 'Sans-serif'],
-    preview: 'linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%))',
+    preview: '/templates/minimal.png',
   },
   {
     id: 'creative',
@@ -36,16 +37,17 @@ const templates = [
     description: 'Stand out with a unique and bold layout',
     popular: false,
     features: ['Eye-catching design', 'Color accents', 'Icon integration'],
-    preview: 'linear-gradient(135deg, hsl(280 80% 60% / 0.2), hsl(320 80% 60% / 0.2))',
+    preview: '/templates/creative.png',
   },
 ];
 
 const Templates = () => {
+  const { setTemplate } = useResumeStore();
   return (
     <div className="min-h-screen bg-background">
       <AnimatedBackground />
       <Navbar />
-      
+
       <main className="pt-32 pb-24 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -81,18 +83,14 @@ const Templates = () => {
                 )}
 
                 {/* Preview */}
-                <div 
-                  className="h-48 rounded-xl mb-6 flex items-center justify-center"
-                  style={{ background: template.preview }}
+                <div
+                  className="h-48 rounded-xl mb-6 flex items-center justify-center overflow-hidden bg-muted"
                 >
-                  <div className="w-32 h-44 bg-background/80 rounded-lg shadow-card p-3 space-y-2">
-                    <div className="h-3 w-16 bg-secondary rounded shimmer" />
-                    <div className="h-2 w-full bg-secondary/50 rounded" />
-                    <div className="h-2 w-4/5 bg-secondary/50 rounded" />
-                    <div className="mt-3 h-2 w-12 bg-primary/20 rounded" />
-                    <div className="h-2 w-full bg-secondary/50 rounded" />
-                    <div className="h-2 w-3/4 bg-secondary/50 rounded" />
-                  </div>
+                  <img
+                    src={template.preview}
+                    alt={template.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
                 </div>
 
                 {/* Info */}
@@ -110,7 +108,13 @@ const Templates = () => {
                 </ul>
 
                 {/* CTA */}
-                <Link to="/editor">
+                <Link
+                  to="/editor"
+                  onClick={() => {
+                    useResumeStore.getState().resetResume();
+                    setTemplate(template.id as any);
+                  }}
+                >
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}

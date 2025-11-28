@@ -1,10 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { FileText, Menu, X, LogOut } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useResumeStore } from '@/stores/resumeStore';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<{ name: string } | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    toast.success('Logged out successfully');
+    navigate('/');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50">
@@ -24,20 +43,33 @@ export function Navbar() {
               <Link to="/templates" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Templates
               </Link>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Pricing
-              </Link>
+
               <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 About
+              </Link>
+
+              <Link
+                to="/dashboard"
+                className="relative group flex items-center gap-2 font-medium transition-all duration-300"
+              >
+                <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
+                  {user ? `My Resume (${user.name})` : 'My Resume'}
+                </span>
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300" />
               </Link>
             </div>
 
             {/* CTA */}
             <div className="hidden md:flex items-center gap-4">
-              <Link to="/login" className="btn-ghost text-sm">
-                Sign In
-              </Link>
-              <Link to="/editor">
+              {!user && (
+                <Link to="/login" className="btn-ghost text-sm">
+                  Sign In
+                </Link>
+              )}
+              <Link
+                to="/editor"
+                onClick={() => useResumeStore.getState().resetResume()}
+              >
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -46,6 +78,16 @@ export function Navbar() {
                   Get Started
                 </motion.button>
               </Link>
+
+              {user && (
+                <button
+                  onClick={handleLogout}
+                  className="btn-ghost text-sm flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -70,36 +112,58 @@ export function Navbar() {
             className="md:hidden mx-4 mt-2"
           >
             <div className="glass rounded-2xl p-6 space-y-4">
-              <Link 
-                to="/templates" 
+              <Link
+                to="/templates"
                 onClick={() => setIsOpen(false)}
                 className="block py-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 Templates
               </Link>
-              <Link 
-                to="/pricing" 
-                onClick={() => setIsOpen(false)}
-                className="block py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Pricing
-              </Link>
-              <Link 
-                to="/about" 
+
+              <Link
+                to="/about"
                 onClick={() => setIsOpen(false)}
                 className="block py-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 About
               </Link>
-              <hr className="border-border" />
-              <Link 
-                to="/login" 
+
+              <Link
+                to="/dashboard"
                 onClick={() => setIsOpen(false)}
-                className="block py-2 text-muted-foreground hover:text-foreground transition-colors"
+                className="block py-2 text-purple-500 font-medium"
               >
-                Sign In
+                {user ? `My Resume (${user.name})` : 'My Resume'}
               </Link>
-              <Link to="/editor" onClick={() => setIsOpen(false)}>
+
+              <hr className="border-border" />
+              {!user ? (
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="block py-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Sign In
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-left py-2 text-muted-foreground hover:text-destructive transition-colors flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              )}
+              <Link
+                to="/editor"
+                onClick={() => {
+                  useResumeStore.getState().resetResume();
+                  setIsOpen(false);
+                }}
+              >
                 <button className="w-full btn-primary">Get Started</button>
               </Link>
             </div>

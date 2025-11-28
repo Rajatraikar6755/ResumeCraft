@@ -1,13 +1,14 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles, FileText, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useResumeStore } from '@/stores/resumeStore';
 
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
       {/* Spotlight effect */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] spotlight" />
-      
+
       <div className="max-w-5xl mx-auto text-center relative z-10">
         {/* Badge */}
         <motion.div
@@ -50,7 +51,10 @@ export function Hero() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
         >
-          <Link to="/editor">
+          <Link
+            to="/editor"
+            onClick={() => useResumeStore.getState().resetResume()}
+          >
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -117,16 +121,15 @@ export function Hero() {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: 0.8 + i * 0.1 }}
-                        className={`px-3 py-2 rounded-lg text-sm ${
-                          i === 1 ? 'bg-primary/20 text-primary' : 'text-muted-foreground'
-                        }`}
+                        className={`px-3 py-2 rounded-lg text-sm ${i === 1 ? 'bg-primary/20 text-primary' : 'text-muted-foreground'
+                          }`}
                       >
                         {item}
                       </motion.div>
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Editor */}
                 <div className="flex-1 p-4 md:p-6 space-y-4">
                   <motion.div
@@ -141,7 +144,7 @@ export function Hero() {
                     <div className="h-4 w-3/5 bg-secondary rounded shimmer" />
                   </motion.div>
                 </div>
-                
+
                 {/* Preview */}
                 <div className="w-1/2 bg-secondary/20 border-l border-border p-4 md:p-6 hidden md:block">
                   <div className="bg-background rounded-lg h-full p-4 space-y-3">
@@ -156,7 +159,7 @@ export function Hero() {
               </div>
             </div>
           </div>
-          
+
           {/* Floating elements */}
           <motion.div
             animate={{ y: [0, -10, 0] }}
