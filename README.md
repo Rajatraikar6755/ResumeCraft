@@ -1,73 +1,85 @@
-# Welcome to your Lovable project
+# 🚀 ResumeCraft AI
 
-## Project info
+> **Build ATS-Optimized Resumes in Minutes with the Power of AI.**
 
-**URL**: https://lovable.dev/projects/bd99cc03-24c9-424e-b83e-edb6d0802b97
+ResumeCraft AI is a modern, full-stack resume builder designed to help job seekers create professional, applicant-tracking-system (ATS) friendly resumes effortlessly. With intelligent AI writing assistance, real-time preview, and multiple premium templates, crafting the perfect resume has never been easier.
 
-## How can I edit this code?
+<div align="center">
+  <img src="/public/favicon.png" alt="ResumeCraft AI Logo" width="100" />
+</div>
 
-There are several ways of editing your application.
+## ✨ Features
 
-**Use Lovable**
+-   **🤖 AI-Powered Writing:** Generate professional summaries, experience bullets, and skills using advanced AI models.
+-   **🎨 Premium Templates:** Choose from a variety of professionally designed templates (Modern, Classic, Creative, Minimal).
+-   **📄 Real-Time Preview:** See your changes instantly as you edit.
+-   **🖨️ PDF Export:** Download high-quality, print-ready PDFs with perfect margins.
+-   **🎯 ATS Optimization:** Built-in best practices to ensure your resume gets past automated filters.
+-   **🔐 Secure Authentication:** User accounts to save and manage multiple resumes.
+-   **📱 Responsive Design:** Works seamlessly on desktop and mobile devices.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/bd99cc03-24c9-424e-b83e-edb6d0802b97) and start prompting.
+## 🛠️ Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+-   **Frontend:** React, TypeScript, Vite, Tailwind CSS, Framer Motion
+-   **Backend:** Node.js, Express
+-   **Database:** PostgreSQL, Prisma ORM
+-   **AI Integration:** GitHub Models
+-   **PDF Generation:** React-to-Print, PDF-Parse
 
-**Use your preferred IDE**
+## 🚀 Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+-   Node.js (v18+)
+-   PostgreSQL
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/resume-craft-ai.git
+    cd resume-craft-ai
+    ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    cd server && npm install
+    ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3.  **Environment Setup:**
+    Create a `.env` file in the root directory with the following:
+    ```env
+    DATABASE_URL="postgresql://user:password@localhost:5432/resumecraft"
+    GITHUB_TOKEN="your_github_token_for_ai"
+    JWT_SECRET="your_jwt_secret"
+    ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4.  **Database Setup:**
+    ```bash
+    cd server
+    npx prisma generate
+    npx prisma db push
+    ```
 
-**Edit a file directly in GitHub**
+5.  **Run the Application:**
+    ```bash
+    # Run both frontend and backend concurrently
+    npm run dev
+    ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📸 Screenshots
 
-**Use GitHub Codespaces**
+*(Add screenshots of the editor, dashboard, and templates here)*
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🤝 Contributing
 
-## What technologies are used for this project?
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-This project is built with:
+## 📄 License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+This project is licensed under the MIT License.
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/bd99cc03-24c9-424e-b83e-edb6d0802b97) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Made with ❤️ by ResumeCraft Team
