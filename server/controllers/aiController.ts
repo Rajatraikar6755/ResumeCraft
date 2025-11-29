@@ -12,7 +12,7 @@ const openai = new OpenAI({
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const geminiModel = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-1.5-flash" });
 
 if (!process.env.GITHUB_TOKEN) console.warn('Warning: GITHUB_TOKEN is not set');
 if (!process.env.GEMINI_API_KEY) console.warn('Warning: GEMINI_API_KEY is not set');
