@@ -96,11 +96,11 @@ const Editor = () => {
         <div className="h-full px-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              to="/"
+              to="/dashboard"
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm">Back</span>
+              <span className="hidden sm:inline text-sm">Back to Dashboard</span>
             </Link>
             <div className="h-6 w-px bg-border" />
             <Link to="/" className="flex items-center gap-2">
@@ -114,7 +114,7 @@ const Editor = () => {
           <div className="flex items-center gap-4">
             <Link
               to="/dashboard"
-              className="relative group hidden md:flex items-center gap-2 font-medium transition-all duration-300"
+              className="relative group hidden lg:flex items-center gap-2 font-medium transition-all duration-300"
             >
               <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
                 {user ? `My Resume (${user.name})` : 'My Resume'}
@@ -122,7 +122,7 @@ const Editor = () => {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300" />
             </Link>
 
-            <div className="hidden md:block h-6 w-px bg-border" />
+            <div className="hidden lg:block h-6 w-px bg-border" />
 
             <button
               onClick={() => setShowPreview(!showPreview)}
