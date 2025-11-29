@@ -14,6 +14,9 @@ const openai = new OpenAI({
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+if (!process.env.GITHUB_TOKEN) console.warn('Warning: GITHUB_TOKEN is not set');
+if (!process.env.GEMINI_API_KEY) console.warn('Warning: GEMINI_API_KEY is not set');
+
 // Helper function to handle AI generation with fallback
 async function generateAIResponse(systemPrompt: string, userPrompt: string, jsonMode: boolean = false): Promise<string> {
     try {
@@ -70,8 +73,9 @@ export const generateContent = async (req: Request, res: Response) => {
             prompt
         );
         res.json({ content });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to generate content' });
+    } catch (error: any) {
+        console.error('Error in generateContent:', error);
+        res.status(500).json({ error: 'Failed to generate content', details: error.message });
     }
 };
 
