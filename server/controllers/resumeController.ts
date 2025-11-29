@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import { prisma } from '../db';
 
 export const createResume = async (req: Request, res: Response) => {
     try {

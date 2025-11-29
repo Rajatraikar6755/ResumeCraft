@@ -1,12 +1,61 @@
 import { Request, Response } from 'express';
 import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 import { parseFile } from '../utils/fileParser';
 
-const client = new OpenAI({
+// Initialize OpenAI (GitHub Models)
+const openai = new OpenAI({
     baseURL: "https://models.inference.ai.azure.com",
     apiKey: process.env.GITHUB_TOKEN,
 });
+
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// Helper function to handle AI generation with fallback
+async function generateAIResponse(systemPrompt: string, userPrompt: string, jsonMode: boolean = false): Promise<string> {
+    try {
+        console.log('Attempting to use GitHub Models (OpenAI)...');
+        const response = await openai.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ],
+            model: "gpt-4o",
+            temperature: 0.7,
+            max_tokens: 2000,
+            response_format: jsonMode ? { type: "json_object" } : undefined
+        });
+
+        return response.choices[0].message.content || '';
+    } catch (error: any) {
+        console.warn('GitHub Models failed, switching to Gemini fallback...', error.message);
+
+        // Fallback to Gemini
+        try {
+            const prompt = `${systemPrompt}\n\n${userPrompt}`;
+
+            // For JSON mode, we append instructions to ensure JSON output if not already explicit
+            const finalPrompt = jsonMode ? `${prompt}\n\nReturn ONLY a valid JSON object.` : prompt;
+
+            const result = await geminiModel.generateContent(finalPrompt);
+            const response = await result.response;
+            let text = response.text();
+
+            // Clean up markdown code blocks if present (Gemini often wraps JSON in ```json ... ```)
+            if (jsonMode) {
+                text = text.replace(/```json\n?|\n?```/g, '').trim();
+            }
+
+            return text;
+        } catch (geminiError: any) {
+            console.error('Gemini fallback also failed:', geminiError.message);
+            throw new Error('All AI services failed. Please try again later.');
+        }
+    }
+}
 
 export const generateContent = async (req: Request, res: Response) => {
     const { prompt, type } = req.body;
@@ -16,21 +65,12 @@ export const generateContent = async (req: Request, res: Response) => {
     }
 
     try {
-        const response = await client.chat.completions.create({
-            messages: [
-                { role: "system", content: "You are a helpful AI assistant for building resumes." },
-                { role: "user", content: prompt }
-            ],
-            model: "gpt-4o", // Using a standard model available on GitHub Models
-            temperature: 0.7,
-            max_tokens: 1000,
-            top_p: 1,
-        });
-
-        const content = response.choices[0].message.content;
+        const content = await generateAIResponse(
+            "You are a helpful AI assistant for building resumes.",
+            prompt
+        );
         res.json({ content });
     } catch (error) {
-        console.error('Error generating content:', error);
         res.status(500).json({ error: 'Failed to generate content' });
     }
 };
@@ -58,18 +98,12 @@ export const calculateATSScore = async (req: Request, res: Response) => {
         }
         `;
 
-        const response = await client.chat.completions.create({
-            messages: [
-                { role: "system", content: "You are a helpful AI assistant for building resumes." },
-                { role: "user", content: prompt }
-            ],
-            model: "gpt-4o",
-            temperature: 0.7,
-            max_tokens: 500,
-            response_format: { type: "json_object" }
-        });
+        const content = await generateAIResponse(
+            "You are a helpful AI assistant for building resumes.",
+            prompt,
+            true // JSON mode
+        );
 
-        const content = response.choices[0].message.content;
         const result = JSON.parse(content || '{}');
         res.json(result);
     } catch (error) {
@@ -124,18 +158,12 @@ export const importFromGithub = async (req: Request, res: Response) => {
         }
         `;
 
-        const response = await client.chat.completions.create({
-            messages: [
-                { role: "system", content: "You are a helpful AI assistant for building resumes." },
-                { role: "user", content: prompt }
-            ],
-            model: "gpt-4o",
-            temperature: 0.7,
-            max_tokens: 500,
-            response_format: { type: "json_object" }
-        });
+        const content = await generateAIResponse(
+            "You are a helpful AI assistant for building resumes.",
+            prompt,
+            true // JSON mode
+        );
 
-        const content = response.choices[0].message.content;
         const result = JSON.parse(content || '{}');
 
         // Merge with original URL
@@ -151,8 +179,6 @@ export const importFromGithub = async (req: Request, res: Response) => {
             } else if (error.response?.status === 403) {
                 errorMessage = 'GitHub API rate limit exceeded';
             }
-        } else if (error instanceof OpenAI.APIError) {
-            errorMessage = `AI Error: ${error.message}`;
         }
 
         res.status(500).json({ error: errorMessage, details: error.message });
@@ -227,18 +253,12 @@ export const parseResume = async (req: Request, res: Response) => {
         }
         `;
 
-        const response = await client.chat.completions.create({
-            messages: [
-                { role: "system", content: "You are a helpful AI assistant for parsing resumes." },
-                { role: "user", content: prompt }
-            ],
-            model: "gpt-4o",
-            temperature: 0.2,
-            max_tokens: 2000,
-            response_format: { type: "json_object" }
-        });
+        const content = await generateAIResponse(
+            "You are a helpful AI assistant for parsing resumes.",
+            prompt,
+            true // JSON mode
+        );
 
-        const content = response.choices[0].message.content;
         const result = JSON.parse(content || '{}');
         res.json(result);
 

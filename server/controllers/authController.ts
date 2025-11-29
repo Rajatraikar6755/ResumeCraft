@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
+import { prisma } from '../db';
 import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
