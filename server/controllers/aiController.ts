@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import OpenAI from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
-import { parseFile } from '../utils/fileParser';
+import { parseFile } from '../utils/fileParser.js';
 
 // Initialize OpenAI (GitHub Models)
 const openai = new OpenAI({
@@ -132,14 +132,19 @@ export const importFromGithub = async (req: Request, res: Response) => {
 
         const [, owner, repo] = match;
 
+        const githubHeaders = {
+            Authorization: `token ${process.env.GITHUB_TOKEN}`,
+            Accept: 'application/vnd.github.v3+json'
+        };
+
         // Fetch repo details
-        const repoResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}`);
+        const repoResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}`, { headers: githubHeaders });
         const repoData = repoResponse.data;
 
         // Fetch README
         let readmeContent = '';
         try {
-            const readmeResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/readme`);
+            const readmeResponse = await axios.get(`https://api.github.com/repos/${owner}/${repo}/readme`, { headers: githubHeaders });
             readmeContent = Buffer.from(readmeResponse.data.content, 'base64').toString('utf-8');
         } catch (e) {
             console.warn('README not found or inaccessible');
