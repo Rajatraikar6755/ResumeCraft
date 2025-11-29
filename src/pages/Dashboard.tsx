@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useResumeStore } from '@/stores/resumeStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trash2, Edit, FileText, Plus, ArrowLeft, LogOut } from 'lucide-react';
+import { Trash2, Edit, FileText, Plus, ArrowLeft, LogOut, Menu } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -80,21 +81,50 @@ const Dashboard = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link
-                            to="/dashboard"
-                            className="relative group flex items-center gap-2 font-medium transition-all duration-300"
-                        >
-                            <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
-                                {user ? `My Resume (${user.name})` : 'My Resume'}
-                            </span>
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300" />
-                        </Link>
-                        <Button onClick={handleCreateNew} size="sm" className="gap-2">
-                            <Plus className="w-4 h-4" /> Create New
-                        </Button>
-                        <Button onClick={handleLogout} variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-destructive">
-                            <LogOut className="w-4 h-4" />
-                        </Button>
+                        {/* Desktop Navigation */}
+                        <div className="hidden md:flex items-center gap-4">
+                            <Link
+                                to="/dashboard"
+                                className="relative group flex items-center gap-2 font-medium transition-all duration-300"
+                            >
+                                <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
+                                    {user ? `My Resume (${user.name})` : 'My Resume'}
+                                </span>
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300" />
+                            </Link>
+                            <Button onClick={handleCreateNew} size="sm" className="gap-2">
+                                <Plus className="w-4 h-4" /> Create New
+                            </Button>
+                            <Button onClick={handleLogout} variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-destructive">
+                                <LogOut className="w-4 h-4" />
+                            </Button>
+                        </div>
+
+                        {/* Mobile Menu */}
+                        <div className="md:hidden">
+                            <Sheet>
+                                <SheetTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <Menu className="w-5 h-5" />
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="right">
+                                    <div className="flex flex-col gap-6 mt-6">
+                                        <div className="flex items-center gap-2 font-medium text-lg">
+                                            <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                                                {user ? `My Resume (${user.name})` : 'My Resume'}
+                                            </span>
+                                        </div>
+                                        <Button onClick={handleCreateNew} className="w-full gap-2 justify-start">
+                                            <Plus className="w-4 h-4" /> Create New Resume
+                                        </Button>
+                                        <Button onClick={handleLogout} variant="ghost" className="w-full gap-2 justify-start text-muted-foreground hover:text-destructive">
+                                            <LogOut className="w-4 h-4" /> Logout
+                                        </Button>
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+                        </div>
                     </div>
                 </div>
             </header>

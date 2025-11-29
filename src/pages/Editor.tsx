@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Download, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { FileText, Download, Eye, EyeOff, ArrowLeft, Menu } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link, useNavigate } from 'react-router-dom';
 import { useReactToPrint } from 'react-to-print';
@@ -24,6 +24,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -44,6 +49,7 @@ const Editor = () => {
   const [activeSection, setActiveSection] = useState('personal');
   const [showPreview, setShowPreview] = useState(true);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [resumeName, setResumeName] = useState('');
   const [user, setUser] = useState<{ name: string } | null>(null);
   const isMobile = useIsMobile();
@@ -108,7 +114,7 @@ const Editor = () => {
           <div className="flex items-center gap-4">
             <Link
               to="/dashboard"
-              className="relative group flex items-center gap-2 font-medium transition-all duration-300"
+              className="relative group hidden md:flex items-center gap-2 font-medium transition-all duration-300"
             >
               <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
                 {user ? `My Resume (${user.name})` : 'My Resume'}
@@ -116,11 +122,11 @@ const Editor = () => {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300" />
             </Link>
 
-            <div className="h-6 w-px bg-border" />
+            <div className="hidden md:block h-6 w-px bg-border" />
 
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="btn-ghost flex items-center gap-2 text-sm"
+              className="btn-ghost hidden md:flex items-center gap-2 text-sm"
             >
               {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Show'} Preview</span>
@@ -128,7 +134,7 @@ const Editor = () => {
 
             <button
               onClick={handleSaveClick}
-              className="btn-primary text-xs"
+              className="btn-primary text-xs hidden sm:block"
             >
               Save Resume
             </button>
@@ -137,11 +143,30 @@ const Editor = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handlePrint}
-              className="btn-primary flex items-center gap-2 text-sm"
+              className="btn-primary hidden sm:flex items-center gap-2 text-sm"
             >
               <Download className="w-4 h-4" />
               <span className="hidden sm:inline">Export PDF</span>
             </motion.button>
+
+            {/* Mobile Menu Trigger */}
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="lg:hidden">
+                  <Menu className="w-5 h-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-72">
+                <EditorSidebar
+                  activeSection={activeSection}
+                  onSectionChange={(section) => {
+                    setActiveSection(section);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full border-none bg-transparent"
+                />
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
@@ -158,23 +183,6 @@ const Editor = () => {
 
         {/* Editor panel */}
         <div className={`flex-1 flex ${showPreview && !isMobile ? 'lg:w-1/2' : 'w-full'}`}>
-          {/* Mobile section tabs */}
-          <div className="lg:hidden border-b border-border bg-card/50 overflow-x-auto">
-            <div className="flex p-2 gap-1">
-              {Object.keys(sectionComponents).map((section) => (
-                <button
-                  key={section}
-                  onClick={() => setActiveSection(section)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${activeSection === section
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                >
-                  {section.charAt(0).toUpperCase() + section.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Form content */}
           <div className="flex-1 overflow-auto p-6 lg:p-8">

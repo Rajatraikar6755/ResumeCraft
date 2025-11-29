@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 interface EditorSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  className?: string;
 }
 
 const sections = [
@@ -28,9 +29,9 @@ const sections = [
   { id: 'templates', label: 'Templates', icon: LayoutTemplate },
 ];
 
-export function EditorSidebar({ activeSection, onSectionChange }: EditorSidebarProps) {
+export function EditorSidebar({ activeSection, onSectionChange, className }: EditorSidebarProps) {
   return (
-    <aside className="w-64 bg-card/50 border-r border-border p-4 flex flex-col">
+    <aside className={cn("w-64 bg-card/50 border-r border-border p-4 flex flex-col", className)}>
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold">Resume Sections</h2>
