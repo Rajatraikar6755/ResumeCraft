@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { importFromGithub } from '@/lib/api';
+import { importFromGithub, generateContent } from '@/lib/api';
 
 function ProjectCard({
   project,
@@ -40,9 +40,9 @@ function ProjectCard({
 
   const handleGenerateDescription = async (prompt: string): Promise<string> => {
     try {
-      const { data } = await import('@/lib/api').then(m => m.generateContent(
+      const { data } = await generateContent(
         `Generate a concise project description with 2 to 5 bullet points based on this input. Use action verbs and focus on technical achievements. Do not include any introductory text. Input: "${prompt}"`
-      ));
+      );
       return data.content;
     } catch (error) {
       console.error(error);

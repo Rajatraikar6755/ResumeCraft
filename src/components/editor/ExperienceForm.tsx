@@ -212,6 +212,8 @@ function SortableExperienceCard({
   );
 }
 
+import { generateContent } from '@/lib/api';
+
 export function ExperienceForm() {
   const { resume, addExperience, updateExperience, removeExperience, reorderExperiences } = useResumeStore();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -248,9 +250,9 @@ export function ExperienceForm() {
 
   const handleGenerateBullet = async (prompt: string): Promise<string> => {
     try {
-      const { data } = await import('@/lib/api').then(m => m.generateContent(
+      const { data } = await generateContent(
         `Write a professional resume bullet point based on this input. Use strong action verbs, quantify results if possible, and keep it concise. Input: "${prompt}"`
-      ));
+      );
       return data.content;
     } catch (error) {
       console.error(error);
