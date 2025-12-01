@@ -70,7 +70,11 @@ ResumeCraft AI is a modern, full-stack resume builder designed to help job seeke
 
 ## 📸 Screenshots
 
-*(Add screenshots of the editor, dashboard, and templates here)*
+
+<img width="1900" height="867" alt="Screenshot 2025-11-29 200727" src="https://github.com/user-attachments/assets/04d79e3b-14bf-442c-a9a6-b30e5d688f9e" />
+<img width="1892" height="868" alt="Screenshot 2025-11-29 200758" src="https://github.com/user-attachments/assets/74e8d152-9b8a-48ec-b8c1-98de976528b1" />
+<img width="1891" height="873" alt="Screenshot 2025-11-29 200854" src="https://github.com/user-attachments/assets/77cffb25-cf94-46a1-aeb1-15b681c7245a" />
+
 
 ## 🤝 Contributing
 
