@@ -86,4 +86,4 @@ This project is licensed under the MIT License.
 
 ---
 
-Made with ❤️ by ResumeCraft Team
+Made with ❤️ by Rajat Raikar
