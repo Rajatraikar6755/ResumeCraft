@@ -1,32 +1,17 @@
 import { Request, Response } from 'express';
 import { prisma } from '../db.js';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: process.env.SMTP_SECURE !== 'false', // true for 465 (SSL), false for 587 (STARTTLS)
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-    tls: {
-        rejectUnauthorized: false, // allow self-signed certs, helps on some hosting environments
-    },
-});
+// Resend uses HTTP API — works on Render and all cloud hosts (no SMTP port blocking)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verify SMTP connection on startup (non-blocking)
-transporter.verify((error) => {
-    if (error) {
-        console.error('SMTP transporter verification failed:', error.message);
-    } else {
-        console.log('SMTP transporter verified successfully — ready to send emails.');
-    }
-});
+if (!process.env.RESEND_API_KEY) {
+    console.warn('Warning: RESEND_API_KEY is not set. OTP emails will fail.');
+}
 
 export const sendOTP = async (req: Request, res: Response) => {
     const { email } = req.body;
@@ -45,12 +30,11 @@ export const sendOTP = async (req: Request, res: Response) => {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Send email FIRST — only persist to DB if the email succeeds
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM || '"Resume Alchemy" <no-reply@resumealchemy.com>',
+        // Send email FIRST via Resend HTTP API (no SMTP port issues)
+        const { error: sendError } = await resend.emails.send({
+            from: process.env.RESEND_FROM || 'Resume Alchemy <onboarding@resend.dev>',
             to: email,
             subject: 'Your Registration OTP - Resume Alchemy',
-            text: `Your OTP for Resume Alchemy is: ${otp}. It expires in 10 minutes.`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
                     <h2 style="color: #4F46E5;">Resume Alchemy</h2>
@@ -62,6 +46,11 @@ export const sendOTP = async (req: Request, res: Response) => {
                 </div>
             `,
         });
+
+        if (sendError) {
+            console.error('Resend error:', sendError);
+            return res.status(500).json({ error: 'Failed to send OTP. Please try again.' });
+        }
 
         // Only save OTP to DB after email is confirmed sent
         await prisma.user.upsert({
