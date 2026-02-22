@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { generateContent, calculateATSScore, importFromGithub, parseResume } from '../controllers/aiController';
+import { generateContent, calculateATSScore, importFromGithub, parseResume } from '../controllers/aiController.js';
 
 const router = express.Router();
 const upload = multer({
