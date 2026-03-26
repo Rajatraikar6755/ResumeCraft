@@ -7,18 +7,13 @@ import bcrypt from 'bcryptjs';
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    // Force secure port 465 in production to prevent Render ETIMEDOUT blackholes, otherwise default to ENV
-    port: process.env.NODE_ENV === 'production' ? 465 : parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.NODE_ENV === 'production' ? true : (process.env.SMTP_SECURE === 'true'),
+    service: 'gmail',
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
     },
-    // Prevent the request from hanging infinitely if the firewall drops the connection
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
+    // Extra failsafe to prevent infinite hanging
+    connectionTimeout: 15000,
 });
 
 if (!process.env.SMTP_USER) {
@@ -66,9 +61,9 @@ export const sendOTP = async (req: Request, res: Response) => {
 
         try {
             await transporter.sendMail(mailOptions);
-        } catch (sendError) {
+        } catch (sendError: any) {
              console.error('SMTP Send error:', sendError);
-             return res.status(500).json({ error: 'Failed to send OTP via SMTP. Please try again.' });
+             return res.status(500).json({ error: `SMTP Error: ${sendError.message || 'Unknown network error'}` });
         }
 
         // Only save OTP to DB after email is confirmed sent
