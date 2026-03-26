@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import authRoutes from './routes/authRoutes';
-import aiRoutes from './routes/aiRoutes';
-import resumeRoutes from './routes/resumeRoutes';
+import authRoutes from './routes/authRoutes.js';
+import aiRoutes from './routes/aiRoutes.js';
+import resumeRoutes from './routes/resumeRoutes.js';
 
 const app = express();
 
