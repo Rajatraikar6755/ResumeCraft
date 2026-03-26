@@ -1,16 +1,23 @@
 import { Request, Response } from 'express';
 import { prisma } from '../db.js';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// Resend uses HTTP API — works on Render and all cloud hosts (no SMTP port blocking)
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+    },
+});
 
-if (!process.env.RESEND_API_KEY) {
-    console.warn('Warning: RESEND_API_KEY is not set. OTP emails will fail.');
+if (!process.env.SMTP_USER) {
+    console.warn('Warning: SMTP_USER is not set. OTP emails will fail.');
 }
 
 export const sendOTP = async (req: Request, res: Response) => {
@@ -30,9 +37,14 @@ export const sendOTP = async (req: Request, res: Response) => {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        // Send email FIRST via Resend HTTP API (no SMTP port issues)
-        const { error: sendError } = await resend.emails.send({
-            from: process.env.RESEND_FROM || 'Resume Alchemy <onboarding@resend.dev>',
+        console.log(`\n================================`);
+        console.log(`[DEV MODE] OTP Generated: ${otp}`);
+        console.log(`[DEV MODE] Sending to: ${email}`);
+        console.log(`================================\n`);
+
+        // Send email FIRST via SMTP
+        const mailOptions = {
+            from: process.env.SMTP_FROM || 'ResumeCraft <noreply@resumecraft.com>',
             to: email,
             subject: 'Your Registration OTP - Resume Alchemy',
             html: `
@@ -45,11 +57,13 @@ export const sendOTP = async (req: Request, res: Response) => {
                     <p style="color: #6B7280; font-size: 13px; margin-top: 16px;">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
                 </div>
             `,
-        });
+        };
 
-        if (sendError) {
-            console.error('Resend error:', sendError);
-            return res.status(500).json({ error: 'Failed to send OTP. Please try again.' });
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (sendError) {
+             console.error('SMTP Send error:', sendError);
+             return res.status(500).json({ error: 'Failed to send OTP via SMTP. Please try again.' });
         }
 
         // Only save OTP to DB after email is confirmed sent
