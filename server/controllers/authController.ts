@@ -7,13 +7,18 @@ import bcrypt from 'bcryptjs';
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true',
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    // Force secure port 465 in production to prevent Render ETIMEDOUT blackholes, otherwise default to ENV
+    port: process.env.NODE_ENV === 'production' ? 465 : parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.NODE_ENV === 'production' ? true : (process.env.SMTP_SECURE === 'true'),
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
     },
+    // Prevent the request from hanging infinitely if the firewall drops the connection
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
 });
 
 if (!process.env.SMTP_USER) {
