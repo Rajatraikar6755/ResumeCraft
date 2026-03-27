@@ -6,18 +6,27 @@ import bcrypt from 'bcryptjs';
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
+// Gmail SMTP Transporter with timeouts to prevent hanging
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '465'),
+    secure: process.env.SMTP_PORT === '465', // true for 465 (SSL), false for 587 (STARTTLS)
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASSWORD,
     },
-    // Extra failsafe to prevent infinite hanging
-    connectionTimeout: 15000,
+    connectionTimeout: 15000,  // 15s — fail fast instead of hanging
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
 });
 
-if (!process.env.SMTP_USER) {
-    console.warn('Warning: SMTP_USER is not set. OTP emails will fail.');
+// Verify SMTP on startup so you see errors in Render logs immediately
+transporter.verify()
+    .then(() => console.log('✅ SMTP connection verified — email sending is ready'))
+    .catch((err: any) => console.error('❌ SMTP verification failed (OTP emails will NOT work):', err.message));
+
+if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+    console.error('❌ SMTP_USER or SMTP_PASSWORD is missing. OTP emails will fail.');
 }
 
 export const sendOTP = async (req: Request, res: Response) => {
@@ -28,7 +37,6 @@ export const sendOTP = async (req: Request, res: Response) => {
     }
 
     try {
-        // Check if user already exists with a password (they should login instead)
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser && existingUser.password) {
             return res.status(400).json({ error: 'User already exists. Please login.' });
@@ -37,14 +45,11 @@ export const sendOTP = async (req: Request, res: Response) => {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-        console.log(`\n================================`);
-        console.log(`[DEV MODE] OTP Generated: ${otp}`);
-        console.log(`[DEV MODE] Sending to: ${email}`);
-        console.log(`================================\n`);
+        console.log(`[OTP] Generated ${otp} for ${email}`);
 
-        // Send email FIRST via SMTP
-        const mailOptions = {
-            from: process.env.SMTP_FROM || 'ResumeCraft <noreply@resumecraft.com>',
+        // Send email via Gmail SMTP
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM || `Resume Alchemy <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'Your Registration OTP - Resume Alchemy',
             html: `
@@ -57,16 +62,10 @@ export const sendOTP = async (req: Request, res: Response) => {
                     <p style="color: #6B7280; font-size: 13px; margin-top: 16px;">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
                 </div>
             `,
-        };
+        });
 
-        try {
-            await transporter.sendMail(mailOptions);
-        } catch (sendError: any) {
-             console.error('SMTP Send error:', sendError);
-             return res.status(500).json({ error: `SMTP Error: ${sendError.message || 'Unknown network error'}` });
-        }
+        console.log(`[OTP] ✅ Email sent successfully to ${email}`);
 
-        // Only save OTP to DB after email is confirmed sent
         await prisma.user.upsert({
             where: { email },
             update: { otp, otpExpiry },
@@ -75,8 +74,20 @@ export const sendOTP = async (req: Request, res: Response) => {
 
         res.json({ message: 'OTP sent successfully' });
     } catch (error: any) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({ error: 'Failed to send OTP. Please try again.' });
+        console.error('❌ [OTP] Email send failed:', error.message);
+
+        // Provide specific error messages based on failure type
+        if (error.code === 'ETIMEDOUT' || error.code === 'ESOCKET') {
+            return res.status(500).json({
+                error: 'Email server connection timed out. SMTP port may be blocked by the hosting provider.',
+            });
+        }
+        if (error.code === 'EAUTH') {
+            return res.status(500).json({
+                error: 'SMTP authentication failed. Check SMTP_USER and SMTP_PASSWORD.',
+            });
+        }
+        res.status(500).json({ error: 'Failed to send OTP email. Please try again later.' });
     }
 };
 
