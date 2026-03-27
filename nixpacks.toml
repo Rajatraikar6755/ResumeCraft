@@ -2,10 +2,10 @@
 nixPkgs = ["nodejs_20", "npm"]
 
 [phases.install]
-cmds = ["npm ci"]
+cmds = ["npm install --include=dev"]
 
 [phases.build]
-cmds = ["npm run build:server"]
+cmds = ["npx prisma generate --schema=server/prisma/schema.prisma", "npx esbuild server/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external", "ls -la dist/"]
 
 [start]
-cmd = "npm run start"
+cmd = "node dist/index.js"
