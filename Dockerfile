@@ -2,21 +2,21 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files first for better caching
 COPY package*.json ./
 COPY server/prisma ./server/prisma
 
-# Install ALL dependencies (dev needed for esbuild + prisma CLI)
-RUN npm install --include=dev
+# Install production deps only (skips canvas and other native test modules)
+RUN npm install --omit=dev
 
-# Copy source code
+# Install ONLY the build tools we need (no native compilation)
+RUN npm install --no-save esbuild prisma
+
 COPY . .
 
-# Generate Prisma client + build server bundle
-RUN npx prisma generate --schema=server/prisma/schema.prisma && \
-    npx esbuild server/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external
+# Generate Prisma client and build server bundle
+RUN npx prisma generate --schema=server/prisma/schema.prisma
+RUN npx esbuild server/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external
 
-# Verify build output exists
 RUN echo "=== Build output ===" && ls -la dist/
 
 CMD ["node", "dist/index.js"]
