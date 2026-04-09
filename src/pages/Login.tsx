@@ -164,6 +164,7 @@ const Login = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
+                                        autoComplete="username"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -175,6 +176,7 @@ const Login = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
+                                        autoComplete="current-password"
                                     />
                                 </div>
                                 <Button type="submit" className="w-full" disabled={loading}>
@@ -217,6 +219,7 @@ const Login = () => {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         required
+                                        autoComplete="name"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -228,6 +231,7 @@ const Login = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
+                                        autoComplete="username"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -240,6 +244,7 @@ const Login = () => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                         minLength={6}
+                                        autoComplete="new-password"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -251,6 +256,7 @@ const Login = () => {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
+                                        autoComplete="new-password"
                                     />
                                 </div>
                                 <Button type="submit" className="w-full" disabled={loading}>
