@@ -33,7 +33,10 @@ function initFirebaseAdmin() {
         }
     } else {
         // Uses GOOGLE_APPLICATION_CREDENTIALS or ADC
-        admin.initializeApp();
+        // Passing projectId explicitly allows verifyIdToken to work even without a full service account
+        admin.initializeApp({
+            projectId: 'resume-alchemy-app'
+        });
         console.log('✅ Firebase Admin initialised with application-default credentials');
     }
 
