@@ -1,134 +1,76 @@
 import { Request, Response } from 'express';
 import { prisma } from '../db.js';
-import nodemailer from 'nodemailer';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import admin from '../firebaseAdmin.js';
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+/**
+ * POST /api/auth/firebase
+ *
+ * Accepts a Firebase ID token from the frontend, verifies it with the
+ * Firebase Admin SDK, upserts the user in Prisma, and returns a JWT +
+ * user object exactly like the old login/register endpoints did.
+ *
+ * Body: { idToken: string }
+ */
+export const firebaseAuth = async (req: Request, res: Response) => {
+    const { idToken } = req.body;
 
-// Gmail SMTP Transporter with timeouts to prevent hanging
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: process.env.SMTP_PORT === '465', // true for 465 (SSL), false for 587 (STARTTLS)
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-    },
-    connectionTimeout: 15000,  // 15s — fail fast instead of hanging
-    greetingTimeout: 15000,
-    socketTimeout: 15000,
-});
-
-// Verify SMTP on startup so you see errors in Render logs immediately
-transporter.verify()
-    .then(() => console.log('✅ SMTP connection verified — email sending is ready'))
-    .catch((err: any) => console.error('❌ SMTP verification failed (OTP emails will NOT work):', err.message));
-
-if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
-    console.error('❌ SMTP_USER or SMTP_PASSWORD is missing. OTP emails will fail.');
-}
-
-export const sendOTP = async (req: Request, res: Response) => {
-    const { email } = req.body;
-
-    if (!email) {
-        return res.status(400).json({ error: 'Email is required' });
+    if (!idToken) {
+        return res.status(400).json({ error: 'Firebase ID token is required' });
     }
 
     try {
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser && existingUser.password) {
-            return res.status(400).json({ error: 'User already exists. Please login.' });
+        // Verify the Firebase ID token
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const { uid, email, name, picture } = decodedToken;
+
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required in Firebase token' });
         }
 
-        const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-        console.log(`[OTP] Generated ${otp} for ${email}`);
-
-        // Send email via Gmail SMTP
-        await transporter.sendMail({
-            from: process.env.SMTP_FROM || `Resume Alchemy <${process.env.SMTP_USER}>`,
-            to: email,
-            subject: 'Your Registration OTP - Resume Alchemy',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-                    <h2 style="color: #4F46E5;">Resume Alchemy</h2>
-                    <p>Your one-time verification code is:</p>
-                    <div style="background: #F3F4F6; padding: 16px; border-radius: 8px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #111827;">
-                        ${otp}
-                    </div>
-                    <p style="color: #6B7280; font-size: 13px; margin-top: 16px;">This code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
-                </div>
-            `,
-        });
-
-        console.log(`[OTP] ✅ Email sent successfully to ${email}`);
-
-        await prisma.user.upsert({
+        // Upsert user in DB — creates on first sign-in, updates name on subsequent ones
+        const user = await prisma.user.upsert({
             where: { email },
-            update: { otp, otpExpiry },
-            create: { email, otp, otpExpiry },
-        });
-
-        res.json({ message: 'OTP sent successfully' });
-    } catch (error: any) {
-        console.error('❌ [OTP] Email send failed:', error.message);
-
-        // Provide specific error messages based on failure type
-        if (error.code === 'ETIMEDOUT' || error.code === 'ESOCKET') {
-            return res.status(500).json({
-                error: 'Email server connection timed out. SMTP port may be blocked by the hosting provider.',
-            });
-        }
-        if (error.code === 'EAUTH') {
-            return res.status(500).json({
-                error: 'SMTP authentication failed. Check SMTP_USER and SMTP_PASSWORD.',
-            });
-        }
-        res.status(500).json({ error: 'Failed to send OTP email. Please try again later.' });
-    }
-};
-
-export const register = async (req: Request, res: Response) => {
-    const { email, otp, password, name } = req.body;
-
-    if (!email || !otp || !password || !name) {
-        return res.status(400).json({ error: 'Name, Email, OTP, and password are required' });
-    }
-
-    try {
-        const user = await prisma.user.findUnique({ where: { email } });
-
-        if (!user || user.otp !== otp || !user.otpExpiry || user.otpExpiry < new Date()) {
-            return res.status(400).json({ error: 'Invalid or expired OTP' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Update user with password and clear OTP
-        const updatedUser = await prisma.user.update({
-            where: { email },
-            data: {
-                name,
-                password: hashedPassword,
-                otp: null,
-                otpExpiry: null
+            update: {
+                name: name || undefined,
+                firebaseUid: uid,
+            },
+            create: {
+                email,
+                name: name || email.split('@')[0],
+                firebaseUid: uid,
             },
         });
 
-        const token = jwt.sign({ userId: updatedUser.id, email: updatedUser.email }, process.env.JWT_SECRET || 'secret', {
-            expiresIn: '7d',
-        });
+        // Issue our own JWT (keeps the rest of the app — resume routes etc. — unchanged)
+        const token = jwt.sign(
+            { userId: user.id, email: user.email },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '7d' },
+        );
 
-        res.json({ token, user: { id: updatedUser.id, email: updatedUser.email, name: updatedUser.name } });
-    } catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).json({ error: 'Failed to register user' });
+        res.json({
+            token,
+            user: { id: user.id, email: user.email, name: user.name },
+        });
+    } catch (error: any) {
+        console.error('❌ Firebase auth verification failed:', error.message);
+
+        if (error.code === 'auth/id-token-expired') {
+            return res.status(401).json({ error: 'Firebase token has expired. Please sign in again.' });
+        }
+        if (error.code === 'auth/argument-error' || error.code === 'auth/id-token-revoked') {
+            return res.status(401).json({ error: 'Invalid Firebase token.' });
+        }
+
+        res.status(500).json({ error: 'Authentication failed. Please try again.' });
     }
 };
 
+/**
+ * Legacy login endpoint — kept for backward compatibility.
+ * Existing users who registered with email+password (bcrypt) can still log in.
+ */
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
@@ -137,6 +79,9 @@ export const login = async (req: Request, res: Response) => {
     }
 
     try {
+        // Dynamic import so bcrypt is only loaded when this legacy path is hit
+        const bcrypt = await import('bcryptjs');
+
         const user = await prisma.user.findUnique({ where: { email } });
 
         if (!user || !user.password) {
@@ -149,11 +94,16 @@ export const login = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET || 'secret', {
-            expiresIn: '7d',
-        });
+        const token = jwt.sign(
+            { userId: user.id, email: user.email },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '7d' },
+        );
 
-        res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+        res.json({
+            token,
+            user: { id: user.id, email: user.email, name: user.name },
+        });
     } catch (error) {
         console.error('Error logging in:', error);
         res.status(500).json({ error: 'Failed to login' });

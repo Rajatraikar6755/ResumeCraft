@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import Login from '../pages/Login';
 import { BrowserRouter } from 'react-router-dom';
-import * as api from '../lib/api';
 
 // Mock dependencies
 vi.mock('react-router-dom', async () => {
@@ -14,9 +13,16 @@ vi.mock('react-router-dom', async () => {
 });
 
 vi.mock('../lib/api', () => ({
+    firebaseAuthRequest: vi.fn(),
     login: vi.fn(),
-    register: vi.fn(),
-    sendOTP: vi.fn(),
+}));
+
+vi.mock('../lib/firebase', () => ({
+    firebaseLogin: vi.fn(),
+    firebaseRegister: vi.fn(),
+    firebaseGoogleSignIn: vi.fn(),
+    firebaseSignOut: vi.fn(),
+    getIdToken: vi.fn().mockResolvedValue('mock-id-token'),
 }));
 
 vi.mock('sonner', () => ({
@@ -58,28 +64,13 @@ describe('Login Component', () => {
         expect(screen.getByRole('button', { name: /sign up/i })).toBeInTheDocument();
     });
 
-    it('calls login api on form submission', async () => {
-        (api.login as any).mockResolvedValue({
-            data: {
-                token: 'fake-token',
-                user: { id: '1', name: 'Test User' },
-            },
-        });
-
+    it('renders Google sign-in button', () => {
         render(
             <BrowserRouter>
                 <Login />
             </BrowserRouter>
         );
 
-        fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } });
-        fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password' } });
-
-        const submitButton = screen.getByRole('button', { name: /sign in/i });
-        fireEvent.click(submitButton);
-
-        await waitFor(() => {
-            expect(api.login).toHaveBeenCalledWith('test@example.com', 'password');
-        });
+        expect(screen.getByRole('button', { name: /google/i })).toBeInTheDocument();
     });
 });

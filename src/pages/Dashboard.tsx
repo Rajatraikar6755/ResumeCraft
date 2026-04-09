@@ -7,6 +7,7 @@ import { Trash2, Edit, FileText, Plus, ArrowLeft, LogOut, Menu } from 'lucide-re
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { firebaseSignOut } from '@/lib/firebase';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -27,7 +28,8 @@ const Dashboard = () => {
         }
     }, [token, fetchResumes, navigate]);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try { await firebaseSignOut(); } catch (_) { /* ignore */ }
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         toast.success('Logged out successfully');
