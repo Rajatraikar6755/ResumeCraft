@@ -6,6 +6,10 @@ const api = axios.create({
 
 // ── Auth ──────────────────────────────────────────────────────
 
+export const checkEmailExists = async (email: string) => {
+    return api.post('/auth/check-email', { email });
+};
+
 /** Send a Firebase ID token to the backend and get back our JWT + user */
 export const firebaseAuthRequest = async (idToken: string) => {
     return api.post('/auth/firebase', { idToken });

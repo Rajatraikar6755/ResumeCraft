@@ -109,3 +109,23 @@ export const login = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Failed to login' });
     }
 };
+
+/**
+ * Validates whether an email already exists in the database.
+ * Used by the frontend during registration to prevent duplicate accounts.
+ */
+export const checkEmail = async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    try {
+        const user = await prisma.user.findUnique({ where: { email } });
+        res.json({ exists: !!user });
+    } catch (error) {
+        console.error('Error checking email:', error);
+        res.status(500).json({ error: 'Failed to check email' });
+    }
+};

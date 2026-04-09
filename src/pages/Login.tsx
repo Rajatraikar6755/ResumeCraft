@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { firebaseAuthRequest } from '@/lib/api';
+import { firebaseAuthRequest, checkEmailExists } from '@/lib/api';
 import {
     firebaseRegister,
     firebaseLogin,
@@ -97,6 +97,14 @@ const Login = () => {
 
         setLoading(true);
         try {
+            // First check if email already exists in Postgres (to catch legacy accounts)
+            const { data } = await checkEmailExists(email);
+            if (data.exists) {
+                toast.error('This account already exists. Please sign in instead.');
+                setLoading(false);
+                return;
+            }
+
             const user = await firebaseRegister(name, email, password);
             await syncWithBackend(user);
             toast.success('Account created successfully');
