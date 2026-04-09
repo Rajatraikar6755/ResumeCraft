@@ -9,7 +9,7 @@ COPY server/prisma ./server/prisma
 RUN npm install --omit=dev
 
 # Install ONLY the build tools we need (no native compilation)
-RUN npm install --no-save esbuild prisma
+RUN npm install --no-save esbuild prisma --omit=dev
 
 COPY . .
 
