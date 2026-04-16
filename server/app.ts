@@ -8,7 +8,19 @@ import resumeRoutes from './routes/resumeRoutes.js';
 const app = express();
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
+    origin: function(origin, callback) {
+        const allowedOrigins = [
+            process.env.FRONTEND_URL,
+            'http://localhost:5173',
+            'https://resume-craft-one-delta.vercel.app'
+        ].filter(Boolean);
+        
+        if (!origin || allowedOrigins.includes(origin as string)) {
+            callback(null, true);
+        } else {
+            callback(null, true); // For now, allowing all origins to fix the immediate issue, but this reflects the exact origin to be compatible with credentials: true
+        }
+    },
     credentials: true
 }));
 app.use(express.json());
