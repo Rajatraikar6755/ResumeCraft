@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { parseResumeDirect } from '@/lib/gemini';
+import { parseResumeDirect } from '@/lib/ai';
 import { useResumeStore } from '@/stores/resumeStore';
 import { cn } from '@/lib/utils';
 

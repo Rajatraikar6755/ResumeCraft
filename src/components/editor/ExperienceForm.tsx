@@ -212,7 +212,7 @@ function SortableExperienceCard({
   );
 }
 
-import { generateContentDirect } from '@/lib/gemini';
+import { generateContentDirect } from '@/lib/ai';
 
 export function ExperienceForm() {
   const { resume, addExperience, updateExperience, removeExperience, reorderExperiences } = useResumeStore();

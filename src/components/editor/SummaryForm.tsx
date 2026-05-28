@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { MagicWriter } from '@/components/ui/magic-writer';
 import { useResumeStore } from '@/stores/resumeStore';
 
-import { generateContentDirect } from '@/lib/gemini';
+import { generateContentDirect } from '@/lib/ai';
 
 export function SummaryForm() {
   const { resume, setSummary } = useResumeStore();
