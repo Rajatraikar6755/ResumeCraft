@@ -32,7 +32,7 @@ export const ImportResumeSection = () => {
 
     setIsUploading(true);
     try {
-        const parsedData: any = await parseResume(file);
+        const { data: parsedData }: any = await parseResume(file);
 
         const currentResume = useResumeStore.getState().resume;
         setResume({

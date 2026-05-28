@@ -40,7 +40,7 @@ function ProjectCard({
 
   const handleGenerateDescription = async (prompt: string): Promise<string> => {
     try {
-      const { content } = await generateContent(
+      const { data: { content } } = await generateContent(
         `Generate a concise project description with 2 to 5 bullet points based on this input. Use action verbs and focus on technical achievements. Do not include any introductory text. Input: "${prompt}"`
       );
       return content;
@@ -54,7 +54,7 @@ function ProjectCard({
     if (!importUrl) return;
     setIsImporting(true);
     try {
-      const data = await importFromGithub(importUrl);
+      const { data } = await importFromGithub(importUrl);
       onUpdate({
         name: data.name,
         description: data.description,

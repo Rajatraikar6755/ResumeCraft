@@ -10,7 +10,7 @@ export function SummaryForm() {
   // AI generation
   const handleGenerate = async (prompt: string): Promise<string> => {
     try {
-      const { content } = await generateContent(
+      const { data: { content } } = await generateContent(
         `Rewrite the following professional summary for a resume. Keep it concise, professional, and impactful. Use action verbs. Text: "${prompt}"`
       );
       return content;

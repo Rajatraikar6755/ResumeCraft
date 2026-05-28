@@ -250,7 +250,7 @@ export function ExperienceForm() {
 
   const handleGenerateBullet = async (prompt: string): Promise<string> => {
     try {
-      const { content } = await generateContent(
+      const { data: { content } } = await generateContent(
         `Write a professional resume bullet point based on this input. Use strong action verbs, quantify results if possible, and keep it concise. Input: "${prompt}"`
       );
       return content;
