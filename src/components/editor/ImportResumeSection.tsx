@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { parseResume } from '@/lib/api';
+import { parseResumeDirect } from '@/lib/gemini';
 import { useResumeStore } from '@/stores/resumeStore';
 import { cn } from '@/lib/utils';
 
@@ -30,31 +30,47 @@ export const ImportResumeSection = () => {
             return;
         }
 
-        setIsUploading(true);
-        try {
-            const response = await parseResume(file);
-            const parsedData = response.data;
+    setIsUploading(true);
+    try {
+        // Read file as text/base64 in-browser
+        let text = '';
 
-            // Update store with parsed data
-            const currentResume = useResumeStore.getState().resume;
-
-            setResume({
-                ...currentResume,
-                personalInfo: { ...currentResume.personalInfo, ...parsedData.personalInfo },
-                summary: parsedData.summary || currentResume.summary,
-                experiences: parsedData.experiences || [], // Note: API returns 'experiences' (plural)
-                education: parsedData.education || [],
-                projects: parsedData.projects || [],
-                skills: parsedData.skills?.map((s: any) => typeof s === 'object' ? s.name : s) || [],
+        if (file.type === 'application/pdf') {
+            // Read PDF as text using FileReader (works for text-based PDFs)
+            text = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target?.result as string ?? '');
+                reader.onerror = reject;
+                reader.readAsText(file);
             });
-
-            toast.success('Resume imported successfully!');
-        } catch (error) {
-            console.error('Import error:', error);
-            toast.error('Failed to parse resume. Please try again.');
-        } finally {
-            setIsUploading(false);
+            if (!text.trim()) {
+                throw new Error('Could not extract text from this PDF. It may be image-based (scanned). Please copy-paste your resume text instead.');
+            }
+        } else {
+            // DOCX requires server-side parsing (mammoth) — show helpful message
+            throw new Error('DOCX parsing requires the backend. Please upload a PDF, or paste your resume text manually.');
         }
+
+        const parsedData: any = await parseResumeDirect(text);
+
+        const currentResume = useResumeStore.getState().resume;
+        setResume({
+            ...currentResume,
+            personalInfo: { ...currentResume.personalInfo, ...parsedData.personalInfo },
+            summary: parsedData.summary || currentResume.summary,
+            experiences: parsedData.experiences || [],
+            education: parsedData.education || [],
+            projects: parsedData.projects || [],
+            skills: parsedData.skills?.map((s: any) => typeof s === 'object' ? s.name : s) || [],
+        });
+
+        toast.success('Resume imported successfully!');
+    } catch (error: any) {
+        console.error('Import error:', error);
+        toast.error(error.message || 'Failed to parse resume. Please try again.');
+    } finally {
+        setIsUploading(false);
+    }
     };
 
     const onDragOver = (e: React.DragEvent) => {

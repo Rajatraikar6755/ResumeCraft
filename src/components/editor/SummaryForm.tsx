@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { MagicWriter } from '@/components/ui/magic-writer';
 import { useResumeStore } from '@/stores/resumeStore';
 
-import { generateContent } from '@/lib/api';
+import { generateContentDirect } from '@/lib/gemini';
 
 export function SummaryForm() {
   const { resume, setSummary } = useResumeStore();
@@ -10,10 +10,10 @@ export function SummaryForm() {
   // AI generation
   const handleGenerate = async (prompt: string): Promise<string> => {
     try {
-      const { data } = await generateContent(
+      const { content } = await generateContentDirect(
         `Rewrite the following professional summary for a resume. Keep it concise, professional, and impactful. Use action verbs. Text: "${prompt}"`
       );
-      return data.content;
+      return content;
     } catch (error) {
       console.error(error);
       throw new Error('Failed to generate content');

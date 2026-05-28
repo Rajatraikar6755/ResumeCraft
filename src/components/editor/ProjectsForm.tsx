@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { importFromGithub, generateContent } from '@/lib/api';
+import { importFromGithubDirect, generateContentDirect } from '@/lib/gemini';
 
 function ProjectCard({
   project,
@@ -40,10 +40,10 @@ function ProjectCard({
 
   const handleGenerateDescription = async (prompt: string): Promise<string> => {
     try {
-      const { data } = await generateContent(
+      const { content } = await generateContentDirect(
         `Generate a concise project description with 2 to 5 bullet points based on this input. Use action verbs and focus on technical achievements. Do not include any introductory text. Input: "${prompt}"`
       );
-      return data.content;
+      return content;
     } catch (error) {
       console.error(error);
       throw new Error('Failed to generate content');
@@ -54,7 +54,7 @@ function ProjectCard({
     if (!importUrl) return;
     setIsImporting(true);
     try {
-      const { data } = await importFromGithub(importUrl);
+      const data = await importFromGithubDirect(importUrl);
       onUpdate({
         name: data.name,
         description: data.description,
@@ -64,9 +64,9 @@ function ProjectCard({
       setIsImportDialogOpen(false);
       setImportUrl('');
       toast.success('Project imported successfully');
-      if (!isExpanded) onToggle(); // Expand to show imported details
+      if (!isExpanded) onToggle();
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || 'Failed to import project. Please check the URL.';
+      const errorMessage = error.message || 'Failed to import project. Please check the URL.';
       toast.error(errorMessage);
       console.error(error);
     } finally {

@@ -212,7 +212,7 @@ function SortableExperienceCard({
   );
 }
 
-import { generateContent } from '@/lib/api';
+import { generateContentDirect } from '@/lib/gemini';
 
 export function ExperienceForm() {
   const { resume, addExperience, updateExperience, removeExperience, reorderExperiences } = useResumeStore();
@@ -250,10 +250,10 @@ export function ExperienceForm() {
 
   const handleGenerateBullet = async (prompt: string): Promise<string> => {
     try {
-      const { data } = await generateContent(
+      const { content } = await generateContentDirect(
         `Write a professional resume bullet point based on this input. Use strong action verbs, quantify results if possible, and keep it concise. Input: "${prompt}"`
       );
-      return data.content;
+      return content;
     } catch (error) {
       console.error(error);
       throw new Error('Failed to generate content');
