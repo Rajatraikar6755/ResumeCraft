@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { parseResumeDirect } from '@/lib/ai';
+import { parseResume } from '@/lib/api';
 import { useResumeStore } from '@/stores/resumeStore';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +32,7 @@ export const ImportResumeSection = () => {
 
     setIsUploading(true);
     try {
-        const parsedData: any = await parseResumeDirect(file);
+        const parsedData: any = await parseResume(file);
 
         const currentResume = useResumeStore.getState().resume;
         setResume({

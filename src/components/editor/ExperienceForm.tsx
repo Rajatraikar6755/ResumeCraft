@@ -212,7 +212,7 @@ function SortableExperienceCard({
   );
 }
 
-import { generateContentDirect } from '@/lib/ai';
+import { generateContent } from '@/lib/api';
 
 export function ExperienceForm() {
   const { resume, addExperience, updateExperience, removeExperience, reorderExperiences } = useResumeStore();
@@ -250,7 +250,7 @@ export function ExperienceForm() {
 
   const handleGenerateBullet = async (prompt: string): Promise<string> => {
     try {
-      const { content } = await generateContentDirect(
+      const { content } = await generateContent(
         `Write a professional resume bullet point based on this input. Use strong action verbs, quantify results if possible, and keep it concise. Input: "${prompt}"`
       );
       return content;
