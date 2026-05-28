@@ -202,7 +202,7 @@ const Dashboard = () => {
                                         </p>
                                     </CardHeader>
                                     <CardContent className="p-0 px-6">
-                                        <ResumeThumbnail resume={resume} />
+                                        <ResumeThumbnail resume={resume.content} />
                                     </CardContent>
                                     <CardFooter className="flex justify-end gap-2 pt-2">
                                         <Button variant="outline" size="sm" onClick={() => handleDelete(resume.id)} className="text-destructive hover:text-destructive">
