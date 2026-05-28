@@ -1,10 +1,10 @@
-import { Resume } from '@/stores/resumeStore';
+import { ResumeData } from '@/stores/resumeStore';
 import { ModernTemplate } from '@/components/templates/ModernTemplate';
 import { ClassicTemplate } from '@/components/templates/ClassicTemplate';
 import { MinimalTemplate } from '@/components/templates/MinimalTemplate';
 import { CreativeTemplate } from '@/components/templates/CreativeTemplate';
 
-const templates = {
+const templates: Record<string, React.ElementType> = {
   modern: ModernTemplate,
   classic: ClassicTemplate,
   minimal: MinimalTemplate,
@@ -12,7 +12,7 @@ const templates = {
 };
 
 interface ResumeThumbnailProps {
-  resume: Resume;
+  resume: ResumeData;
 }
 
 export const ResumeThumbnail = ({ resume }: ResumeThumbnailProps) => {
