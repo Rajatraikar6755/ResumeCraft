@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash2, Edit, FileText, Plus, ArrowLeft, LogOut, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { ResumeThumbnail } from '@/components/dashboard/ResumeThumbnail';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { firebaseSignOut } from '@/lib/firebase';
@@ -58,6 +59,40 @@ const Dashboard = () => {
         if (score >= 80) return 'text-green-500';
         if (score >= 60) return 'text-yellow-500';
         return 'text-red-500';
+    };
+
+    const ATSScoreCircle = ({ score }: { score: number }) => {
+        const radius = 20;
+        const circumference = 2 * Math.PI * radius;
+        const strokeDashoffset = circumference - (score / 100) * circumference;
+        const colorClass = getScoreColor(score);
+        
+        return (
+            <div className={`relative w-12 h-12 flex items-center justify-center ${colorClass}`}>
+                <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                    <circle
+                        className="text-muted/20 stroke-current"
+                        strokeWidth="4"
+                        fill="transparent"
+                        r={radius}
+                        cx="24"
+                        cy="24"
+                    />
+                    <circle
+                        className="stroke-current transition-all duration-1000 ease-out"
+                        strokeWidth="4"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        fill="transparent"
+                        r={radius}
+                        cx="24"
+                        cy="24"
+                    />
+                </svg>
+                <span className="text-xs font-bold relative z-10">{score}</span>
+            </div>
+        );
     };
 
     return (
@@ -157,11 +192,7 @@ const Dashboard = () => {
                                             </CardTitle>
                                             {resume.atsScore !== undefined && (
                                                 <div className="flex flex-col items-center">
-                                                    <div className={`relative w-12 h-12 flex items-center justify-center rounded-full border-4 ${getScoreColor(resume.atsScore).replace('text-', 'border-')}`}>
-                                                        <span className={`text-xs font-bold ${getScoreColor(resume.atsScore)}`}>
-                                                            {resume.atsScore}
-                                                        </span>
-                                                    </div>
+                                                    <ATSScoreCircle score={resume.atsScore} />
                                                     <span className="text-[10px] text-muted-foreground mt-1">ATS Score</span>
                                                 </div>
                                             )}
@@ -170,10 +201,8 @@ const Dashboard = () => {
                                             Last updated: {format(new Date(resume.updatedAt), 'MMM d, yyyy')}
                                         </p>
                                     </CardHeader>
-                                    <CardContent>
-                                        <div className="h-32 bg-secondary/30 rounded-md flex items-center justify-center border border-dashed border-border">
-                                            <FileText className="w-8 h-8 text-muted-foreground/50" />
-                                        </div>
+                                    <CardContent className="p-0 px-6">
+                                        <ResumeThumbnail resume={resume} />
                                     </CardContent>
                                     <CardFooter className="flex justify-end gap-2 pt-2">
                                         <Button variant="outline" size="sm" onClick={() => handleDelete(resume.id)} className="text-destructive hover:text-destructive">

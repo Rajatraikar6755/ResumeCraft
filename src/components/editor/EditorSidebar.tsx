@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 interface EditorSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  atsScore?: number;
   className?: string;
 }
 
@@ -29,7 +30,17 @@ const sections = [
   { id: 'templates', label: 'Templates', icon: LayoutTemplate },
 ];
 
-export function EditorSidebar({ activeSection, onSectionChange, className }: EditorSidebarProps) {
+export function EditorSidebar({ activeSection, onSectionChange, atsScore, className }: EditorSidebarProps) {
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return 'text-green-500 from-green-500 to-emerald-400';
+    if (score >= 60) return 'text-yellow-500 from-yellow-500 to-orange-400';
+    return 'text-red-500 from-red-500 to-rose-400';
+  };
+  const getScoreColorText = (score: number) => {
+    if (score >= 80) return 'text-green-500';
+    if (score >= 60) return 'text-yellow-500';
+    return 'text-red-500';
+  };
   return (
     <aside className={cn("w-64 bg-card/50 border-r border-border p-4 flex flex-col", className)}>
       {/* Header */}
@@ -70,13 +81,18 @@ export function EditorSidebar({ activeSection, onSectionChange, className }: Edi
         <div className="p-3 rounded-xl bg-secondary/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">ATS Score</span>
-            <span className="text-lg font-bold text-green-500">--</span>
+            <span className={cn("text-lg font-bold", atsScore !== undefined ? getScoreColorText(atsScore) : "text-muted-foreground")}>
+              {atsScore !== undefined ? atsScore : '--'}
+            </span>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
-            <div className="h-full w-0 bg-gradient-to-r from-primary to-green-500 rounded-full transition-all duration-500" />
+            <div 
+              className={cn("h-full rounded-full transition-all duration-500 bg-gradient-to-r", atsScore !== undefined ? getScoreColor(atsScore) : "w-0")}
+              style={{ width: `${atsScore || 0}%` }}
+            />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Complete all sections to see your score
+            {atsScore !== undefined ? 'Keep editing to improve your score' : 'Complete all sections to see your score'}
           </p>
         </div>
       </div>

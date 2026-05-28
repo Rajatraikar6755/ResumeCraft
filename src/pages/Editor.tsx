@@ -178,6 +178,7 @@ const Editor = () => {
           <EditorSidebar
             activeSection={activeSection}
             onSectionChange={setActiveSection}
+            atsScore={resume.atsScore}
           />
         </div>
 
