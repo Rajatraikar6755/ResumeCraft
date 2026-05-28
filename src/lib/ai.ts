@@ -76,61 +76,38 @@ export async function importFromGithubDirect(url: string): Promise<{
 }
 
 /**
- * Parse a resume from extracted text.
+ * Parse a resume from an uploaded file (PDF or DOCX).
  * Returns structured resume data.
  */
-export async function parseResumeDirect(text: string): Promise<unknown> {
-  const systemContext = 'You are an expert resume parser.';
-  const prompt = `Extract information from the following resume text.
+export async function parseResumeDirect(file: File): Promise<unknown> {
+  // Convert File to Base64
+  const fileBase64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = error => reject(error);
+  });
 
-Resume Text:
-${text.slice(0, 12000)}
+  const response = await fetch('/api/generate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      action: 'parse_resume', 
+      fileType: file.type, 
+      fileBase64 
+    })
+  });
 
-Return ONLY a valid JSON object with this exact structure:
-{
-  "personalInfo": {
-    "fullName": "string",
-    "email": "string",
-    "phone": "string",
-    "location": "string",
-    "linkedin": "string",
-    "github": "string",
-    "portfolio": "string"
-  },
-  "summary": "string",
-  "experiences": [{
-    "id": "uuid",
-    "jobTitle": "string",
-    "company": "string",
-    "location": "string",
-    "startDate": "YYYY-MM",
-    "endDate": "YYYY-MM or Present",
-    "description": "string",
-    "bullets": ["string"]
-  }],
-  "education": [{
-    "id": "uuid",
-    "school": "string",
-    "degree": "string",
-    "location": "string",
-    "startDate": "YYYY-MM",
-    "endDate": "YYYY-MM or Present",
-    "description": "string"
-  }],
-  "projects": [{
-    "id": "uuid",
-    "name": "string",
-    "description": "string",
-    "technologies": ["string"],
-    "url": "string"
-  }],
-  "skills": [{
-    "id": "uuid",
-    "name": "string",
-    "level": "Expert" | "Intermediate" | "Beginner"
-  }]
-}`;
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.error || `Server error: ${response.status}`);
+  }
 
-  const content = await callGitHubModels(systemContext, prompt, true);
-  return JSON.parse(content);
+  const data = await response.json();
+  return JSON.parse(data.content);
 }

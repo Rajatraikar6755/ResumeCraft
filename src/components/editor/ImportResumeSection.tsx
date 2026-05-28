@@ -32,26 +32,7 @@ export const ImportResumeSection = () => {
 
     setIsUploading(true);
     try {
-        // Read file as text/base64 in-browser
-        let text = '';
-
-        if (file.type === 'application/pdf') {
-            // Read PDF as text using FileReader (works for text-based PDFs)
-            text = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target?.result as string ?? '');
-                reader.onerror = reject;
-                reader.readAsText(file);
-            });
-            if (!text.trim()) {
-                throw new Error('Could not extract text from this PDF. It may be image-based (scanned). Please copy-paste your resume text instead.');
-            }
-        } else {
-            // DOCX requires server-side parsing (mammoth) — show helpful message
-            throw new Error('DOCX parsing requires the backend. Please upload a PDF, or paste your resume text manually.');
-        }
-
-        const parsedData: any = await parseResumeDirect(text);
+        const parsedData: any = await parseResumeDirect(file);
 
         const currentResume = useResumeStore.getState().resume;
         setResume({
