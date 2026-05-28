@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "resume-alchemy-2025"
+  },
   "targets": {},
   "etags": {}
 }

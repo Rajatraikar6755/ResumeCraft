@@ -3,9 +3,9 @@ import admin from 'firebase-admin';
 /**
  * Initialise Firebase Admin SDK.
  *
- * In production (Railway) set the FIREBASE_SERVICE_ACCOUNT env var to the
+ * In production (Render) set the FIREBASE_SERVICE_ACCOUNT env var to the
  * full JSON string of the service-account key, e.g.:
- *   FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"resume-alchemy-app",...}'
+ *   FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"resume-alchemy-2025",...}'
  *
  * Locally you can either:
  *   • Set the same env var, or
@@ -35,7 +35,7 @@ function initFirebaseAdmin() {
         // Uses GOOGLE_APPLICATION_CREDENTIALS or ADC
         // Passing projectId explicitly allows verifyIdToken to work even without a full service account
         admin.initializeApp({
-            projectId: 'resume-alchemy-app'
+            projectId: 'resume-alchemy-2025'
         });
         console.log('✅ Firebase Admin initialised with application-default credentials');
     }

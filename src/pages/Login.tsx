@@ -45,10 +45,24 @@ const GoogleIcon = () => (
 // ── Helper: exchange Firebase user for our backend JWT ───────
 const syncWithBackend = async (firebaseUser: import('firebase/auth').User) => {
     const idToken = await getIdToken(firebaseUser);
-    const { data } = await firebaseAuthRequest(idToken);
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    return data;
+    try {
+        const { data } = await firebaseAuthRequest(idToken);
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data;
+    } catch (err: any) {
+        // Backend unreachable (e.g. Railway expired / Render cold start).
+        // Store the Firebase token so authenticated routes still work.
+        console.warn('Backend sync failed — storing Firebase token as fallback:', err?.message);
+        localStorage.setItem('token', idToken);
+        localStorage.setItem('user', JSON.stringify({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            name: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+        }));
+        return null;
+    }
 };
 
 // ── Component ───────────────────────────────────────────────
@@ -127,7 +141,17 @@ const Login = () => {
             toast.success('Signed in with Google');
             navigate('/');
         } catch (error: any) {
-            if (error.code === 'auth/popup-closed-by-user') return;
+            // Silently ignore user-dismissed popups
+            if (error.code === 'auth/popup-closed-by-user') {
+                setLoading(false);
+                return;
+            }
+            // Popup was blocked by browser — COOP header fix in vercel.json should resolve this
+            if (error.code === 'auth/popup-blocked') {
+                toast.error('Popup was blocked. Please allow popups for this site and try again.');
+                setLoading(false);
+                return;
+            }
             const msg = mapFirebaseError(error.code) || 'Google sign-in failed';
             toast.error(msg);
             console.error(error);
@@ -312,6 +336,11 @@ function mapFirebaseError(code: string | undefined): string | null {
             return 'Too many attempts. Please try again later.';
         case 'auth/network-request-failed':
             return 'Network error. Check your internet connection.';
+        case 'auth/cancelled-popup-request':
+        case 'auth/popup-blocked':
+            return 'Sign-in popup was blocked. Please allow popups for this site.';
+        case 'auth/operation-not-allowed':
+            return 'Google sign-in is not enabled. Please contact support.';
         default:
             return null;
     }

@@ -11,12 +11,12 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDdW5199ISNd5Y7ZMxFgfe9bfRQMeDayFw",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "resume-alchemy-app.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "resume-alchemy-app",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "resume-alchemy-app.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "324979302744",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:324979302744:web:c19f425344e5f06cf6c52d",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBElESrzbF67oh_LJuQBtMf_dRgaR0NqjU",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "resume-alchemy-2025.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "resume-alchemy-2025",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "resume-alchemy-2025.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "918941914945",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:918941914945:web:df5a7ceeb7f454a7fd73c0",
 };
 
 const app = initializeApp(firebaseConfig);

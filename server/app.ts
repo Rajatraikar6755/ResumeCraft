@@ -12,7 +12,9 @@ app.use(cors({
         const allowedOrigins = [
             process.env.FRONTEND_URL,
             'http://localhost:5173',
-            'https://resume-craft-one-delta.vercel.app'
+            'http://localhost:8080',
+            'https://resume-craft-one-delta.vercel.app',
+            // Add your Render backend's consumer URL if needed; FRONTEND_URL handles this in prod
         ].filter(Boolean);
         
         if (!origin || allowedOrigins.includes(origin as string)) {
