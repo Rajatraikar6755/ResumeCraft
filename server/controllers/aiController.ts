@@ -203,12 +203,14 @@ export const parseResume = async (req: Request, res: Response) => {
         const text = await parseFile(req.file);
 
         const prompt = `
-        You are an expert resume parser. Extract information from the following resume text and structure it into the specified JSON format.
+        You are an expert resume parser. Extract information from the following resume text and structure it into the specified STRICT JSON format.
+        DO NOT include any markdown formatting, code blocks, or extra text. ONLY return valid JSON.
+        If a field is not found, leave it as an empty string or empty array.
         
         Resume Text:
         ${text.slice(0, 15000)}
         
-        Return ONLY a JSON object with the following structure:
+        Return ONLY a JSON object with the exact following structure:
         {
             "personalInfo": {
                 "fullName": "string",
@@ -222,8 +224,8 @@ export const parseResume = async (req: Request, res: Response) => {
             "summary": "string",
             "experiences": [
                 {
-                    "id": "string (generate a random uuid)",
-                    "jobTitle": "string",
+                    "id": "string",
+                    "position": "string",
                     "company": "string",
                     "location": "string",
                     "startDate": "string (YYYY-MM)",
@@ -234,29 +236,43 @@ export const parseResume = async (req: Request, res: Response) => {
             ],
             "education": [
                 {
-                    "id": "string (generate a random uuid)",
-                    "school": "string",
+                    "id": "string",
+                    "institution": "string",
                     "degree": "string",
+                    "field": "string",
                     "location": "string",
                     "startDate": "string (YYYY-MM)",
                     "endDate": "string (YYYY-MM) or 'Present'",
-                    "description": "string"
+                    "gpa": "string"
                 }
             ],
             "projects": [
                 {
-                    "id": "string (generate a random uuid)",
+                    "id": "string",
                     "name": "string",
                     "description": "string",
                     "technologies": ["string"],
                     "url": "string"
                 }
             ],
-            "skills": [
+            "skills": ["string"],
+            "certifications": [
                 {
-                    "id": "string (generate a random uuid)",
+                    "id": "string",
                     "name": "string",
-                    "level": "Expert" | "Intermediate" | "Beginner"
+                    "organization": "string",
+                    "issueDate": "string",
+                    "url": "string",
+                    "description": "string"
+                }
+            ],
+            "achievements": [
+                {
+                    "id": "string",
+                    "title": "string",
+                    "organization": "string",
+                    "date": "string",
+                    "description": "string"
                 }
             ]
         }

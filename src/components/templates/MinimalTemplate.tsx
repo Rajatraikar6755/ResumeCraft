@@ -6,115 +6,170 @@ interface TemplateProps {
 }
 
 export const MinimalTemplate = ({ resume }: TemplateProps) => {
-    const { personalInfo, summary, experiences, education, projects, skills } = resume;
+    const { personalInfo, summary, experiences, education, projects, skills, certifications, achievements, sectionOrder } = resume;
+
+    const renderSection = (id: string) => {
+        switch (id) {
+            case 'experience':
+                if (!experiences || experiences.length === 0) return null;
+                return (
+                    <section key="experience" className="mb-4">
+                        <h2 className="font-semibold text-lg mb-4">Experience</h2>
+                        <div className="space-y-3">
+                            {experiences.map((exp) => (
+                                <div key={exp.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold">{exp.position}</h3>
+                                            <p className="font-medium opacity-90">{exp.company}</p>
+                                        </div>
+                                        <span className="opacity-75">{exp.startDate} - {exp.endDate}</span>
+                                    </div>
+                                    {exp.bullets && exp.bullets.length > 0 && (
+                                        <ul className="list-disc list-outside ml-4 mt-1 space-y-0.5 opacity-80">
+                                            {exp.bullets.map((b, i) => <li key={i}>{b}</li>)}
+                                        </ul>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            case 'education':
+                if (!education || education.length === 0) return null;
+                return (
+                    <section key="education" className="mb-4">
+                        <h2 className="font-semibold text-lg mb-4">Education</h2>
+                        <div className="space-y-3">
+                            {education.map((edu) => (
+                                <div key={edu.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold">{edu.degree} {edu.field && `in ${edu.field}`}</h3>
+                                            <p className="opacity-90">{edu.institution}</p>
+                                        </div>
+                                        <span className="opacity-75">{edu.startDate} - {edu.endDate}</span>
+                                    </div>
+                                    {edu.gpa && <p className="opacity-75 mt-0.5">GPA: {edu.gpa}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            case 'projects':
+                if (!projects || projects.length === 0) return null;
+                return (
+                    <section key="projects" className="mb-4">
+                        <h2 className="font-semibold text-lg mb-4">Projects</h2>
+                        <div className="space-y-3">
+                            {projects.map((proj) => (
+                                <div key={proj.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="font-semibold">{proj.name}</h3>
+                                        {proj.url && <span className="opacity-75">{proj.url}</span>}
+                                    </div>
+                                    <p className="opacity-80 mt-1">{proj.description}</p>
+                                    {proj.technologies && proj.technologies.length > 0 && (
+                                        <p className="opacity-75 mt-0.5">Tech: {proj.technologies.join(', ')}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            case 'skills':
+                if (!skills || skills.length === 0) return null;
+                return (
+                    <section key="skills" className="mb-4">
+                        <h2 className="font-semibold text-lg mb-4">Skills</h2>
+                        <div className="flex flex-wrap gap-2">
+                            {skills.map((s, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-black/5 rounded opacity-90">{s}</span>
+                            ))}
+                        </div>
+                    </section>
+                );
+            case 'certifications':
+                if (!certifications || certifications.length === 0) return null;
+                return (
+                    <section key="certifications" className="mb-4">
+                        <h2 className="font-semibold text-lg mb-4">Certifications</h2>
+                        <div className="space-y-3">
+                            {certifications.map((cert) => (
+                                <div key={cert.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold">{cert.name}</h3>
+                                            <p className="opacity-90">{cert.organization}</p>
+                                        </div>
+                                        <span className="opacity-75">{cert.issueDate}</span>
+                                    </div>
+                                    {cert.description && <p className="opacity-80 mt-1">{cert.description}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            case 'achievements':
+                if (!achievements || achievements.length === 0) return null;
+                return (
+                    <section key="achievements" className="mb-4">
+                        <h2 className="font-semibold text-lg mb-4">Achievements</h2>
+                        <div className="space-y-3">
+                            {achievements.map((ach) => (
+                                <div key={ach.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <h3 className="font-semibold">{ach.title}</h3>
+                                            <p className="opacity-90">{ach.organization}</p>
+                                        </div>
+                                        <span className="opacity-75">{ach.date}</span>
+                                    </div>
+                                    {ach.description && <p className="opacity-80 mt-1">{ach.description}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            default:
+                return null;
+        }
+    };
 
     return (
-        <div className="p-8 space-y-8 text-sm font-sans text-gray-800">
+        <div className="p-12 text-gray-900" style={{ fontSize: '1em' }}>
             {/* Header */}
             {personalInfo.fullName && (
-                <header>
-                    <h1 className="text-4xl font-light mb-4 tracking-tight">{personalInfo.fullName}</h1>
-                    <div className="flex flex-col gap-1 text-gray-500 text-xs">
-                        {personalInfo.email && <span>{personalInfo.email}</span>}
-                        {personalInfo.phone && <span>{personalInfo.phone}</span>}
-                        {personalInfo.location && <span>{personalInfo.location}</span>}
-                        <div className="flex gap-3 mt-1">
-                            {personalInfo.linkedin && <span>in/{personalInfo.linkedin}</span>}
-                            {personalInfo.github && <span>gh/{personalInfo.github}</span>}
-                            {personalInfo.portfolio && <span>{personalInfo.portfolio}</span>}
+                <header className="pb-8 mb-8">
+                    <div className="flex items-center gap-6 justify-between">
+                        <div className="flex-1">
+                            <h1 style={{ fontSize: '2.5em', fontWeight: 'bold', lineHeight: 1.2, marginBottom: '0.25em' }}>{personalInfo.fullName}</h1>
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 opacity-80" style={{ fontSize: '0.85em' }}>
+                                {personalInfo.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {personalInfo.email}</span>}
+                                {personalInfo.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {personalInfo.phone}</span>}
+                                {personalInfo.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {personalInfo.location}</span>}
+                                {personalInfo.linkedin && <span className="flex items-center gap-1"><Linkedin className="w-3 h-3" /> {personalInfo.linkedin}</span>}
+                                {personalInfo.github && <span className="flex items-center gap-1"><Github className="w-3 h-3" /> {personalInfo.github}</span>}
+                                {personalInfo.portfolio && <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {personalInfo.portfolio}</span>}
+                            </div>
                         </div>
+                        {personalInfo.photoUrl && (
+                            <img src={personalInfo.photoUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover border-2 border-current" />
+                        )}
                     </div>
                 </header>
             )}
 
-            <div className="grid grid-cols-[1fr_2fr] gap-8">
-                {/* Left Column */}
-                <div className="space-y-8">
-                    {/* Skills */}
-                    {skills.length > 0 && (
-                        <section>
-                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Skills</h2>
-                            <div className="flex flex-col gap-2">
-                                {skills.map((skill, i) => (
-                                    <span key={i} className="text-gray-700">{skill}</span>
-                                ))}
-                            </div>
-                        </section>
-                    )}
+            {/* Summary */}
+            {summary && (
+                <section className="mb-4">
+                    <h2 className="font-semibold text-lg mb-4">Professional Summary</h2>
+                    <p className="opacity-90 leading-relaxed">{summary}</p>
+                </section>
+            )}
 
-                    {/* Education */}
-                    {education.length > 0 && (
-                        <section>
-                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Education</h2>
-                            <div className="space-y-4">
-                                {education.map((edu) => (
-                                    <div key={edu.id}>
-                                        <h3 className="font-medium text-gray-900">{edu.institution}</h3>
-                                        <p className="text-gray-600 text-xs mb-1">
-                                            {edu.degree} {edu.field && `in ${edu.field}`}
-                                        </p>
-                                        <p className="text-gray-400 text-xs">{edu.startDate} - {edu.endDate}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-8">
-                    {/* Summary */}
-                    {summary && (
-                        <section>
-                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Profile</h2>
-                            <p className="text-gray-600 leading-relaxed">{summary}</p>
-                        </section>
-                    )}
-
-                    {/* Experience */}
-                    {experiences.length > 0 && (
-                        <section>
-                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Experience</h2>
-                            <div className="space-y-6">
-                                {experiences.map((exp) => (
-                                    <div key={exp.id}>
-                                        <div className="flex justify-between items-baseline mb-1">
-                                            <h3 className="font-medium text-gray-900">{exp.position}</h3>
-                                            <span className="text-xs text-gray-400">{exp.startDate} - {exp.endDate}</span>
-                                        </div>
-                                        <p className="text-gray-500 text-xs mb-2">{exp.company}</p>
-                                        {exp.bullets?.length > 0 && (
-                                            <ul className="space-y-1 text-gray-600">
-                                                {exp.bullets.map((bullet, i) => (
-                                                    <li key={i}>{bullet}</li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-
-                    {/* Projects */}
-                    {projects.length > 0 && (
-                        <section>
-                            <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Projects</h2>
-                            <div className="space-y-4">
-                                {projects.map((proj) => (
-                                    <div key={proj.id}>
-                                        <h3 className="font-medium text-gray-900 mb-1">{proj.name}</h3>
-                                        {proj.description && <p className="text-gray-600 mb-1">{proj.description}</p>}
-                                        {proj.technologies.length > 0 && (
-                                            <p className="text-xs text-gray-400">{proj.technologies.join(', ')}</p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </div>
-            </div>
+            {/* Dynamic Sections */}
+            {(sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications', 'achievements']).map(renderSection)}
         </div>
     );
 };

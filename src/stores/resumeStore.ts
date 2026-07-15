@@ -32,6 +32,26 @@ export interface Project {
   url?: string;
 }
 
+
+export interface Certification {
+  id: string;
+  name: string;
+  organization: string;
+  issueDate: string;
+  expirationDate?: string;
+  credentialId?: string;
+  credentialUrl?: string;
+  description?: string;
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  organization: string;
+  date: string;
+  description: string;
+}
+
 export interface ResumeData {
   id: string;
   title?: string;
@@ -51,6 +71,7 @@ export interface ResumeData {
   skills: string[];
   template: 'modern' | 'classic' | 'minimal' | 'creative';
   atsScore?: number;
+  atsFeedback?: string;
   createdAt?: string;
 }
 
@@ -73,11 +94,23 @@ interface ResumeState {
   updateProject: (id: string, project: Partial<Project>) => void;
   removeProject: (id: string) => void;
   setSkills: (skills: string[]) => void;
+  addCertification: (cert: Certification) => void;
+  updateCertification: (id: string, cert: Partial<Certification>) => void;
+  removeCertification: (id: string) => void;
+  reorderCertifications: (certifications: Certification[]) => void;
+  addAchievement: (achievement: Achievement) => void;
+  updateAchievement: (id: string, achievement: Partial<Achievement>) => void;
+  removeAchievement: (id: string) => void;
+  reorderAchievements: (achievements: Achievement[]) => void;
+  setFontFamily: (fontFamily: string) => void;
+  setFontSizeScale: (fontSizeScale: number) => void;
+  setSectionOrder: (sectionOrder: string[]) => void;
   setTemplate: (template: ResumeData['template']) => void;
   setIsGenerating: (generating: boolean) => void;
   setActiveSection: (section: string | null) => void;
   resetResume: () => void;
   setAtsScore: (score: number) => void;
+  setAtsFeedback: (feedback: string) => void;
   saveResume: (token: string, title?: string) => Promise<void>;
   loadResume: (id: string, token: string) => Promise<void>;
   fetchResumes: (token: string) => Promise<void>;
@@ -224,6 +257,7 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
   }),
 
   setAtsScore: (score) => set((state) => ({ resume: { ...state.resume, atsScore: score } })),
+  setAtsFeedback: (feedback) => set((state) => ({ resume: { ...state.resume, atsFeedback: feedback } })),
 
   saveResume: async (token, title) => {
     const { resume } = get();

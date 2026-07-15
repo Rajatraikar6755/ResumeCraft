@@ -34,15 +34,45 @@ export const ImportResumeSection = () => {
     try {
         const { data: parsedData }: any = await parseResume(file);
 
+        const generateId = () => Math.random().toString(36).substring(2, 11);
+
+        const experiences = (parsedData.experiences || []).map((exp: any) => ({
+            ...exp,
+            id: exp.id || generateId()
+        }));
+
+        const education = (parsedData.education || []).map((edu: any) => ({
+            ...edu,
+            id: edu.id || generateId()
+        }));
+
+        const projects = (parsedData.projects || []).map((proj: any) => ({
+            ...proj,
+            id: proj.id || generateId()
+        }));
+
+        const certifications = (parsedData.certifications || []).map((cert: any) => ({
+            ...cert,
+            id: cert.id || generateId()
+        }));
+
+        const achievements = (parsedData.achievements || []).map((ach: any) => ({
+            ...ach,
+            id: ach.id || generateId()
+        }));
+
         const currentResume = useResumeStore.getState().resume;
+
         setResume({
             ...currentResume,
             personalInfo: { ...currentResume.personalInfo, ...parsedData.personalInfo },
             summary: parsedData.summary || currentResume.summary,
-            experiences: parsedData.experiences || [],
-            education: parsedData.education || [],
-            projects: parsedData.projects || [],
+            experiences,
+            education,
+            projects,
             skills: parsedData.skills?.map((s: any) => typeof s === 'object' ? s.name : s) || [],
+            certifications,
+            achievements,
         });
 
         toast.success('Resume imported successfully!');
@@ -173,6 +203,14 @@ export const ImportResumeSection = () => {
                     <li className="flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full bg-blue-500" />
                         Skills
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-blue-500" />
+                        Certifications
+                    </li>
+                    <li className="flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-blue-500" />
+                        Achievements
                     </li>
                 </ul>
             </div>

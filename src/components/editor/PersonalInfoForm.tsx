@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Linkedin, Github, Globe } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Linkedin, Github, Globe, Camera, Trash2 } from 'lucide-react';
 import { useResumeStore } from '@/stores/resumeStore';
+import { toast } from 'sonner';
 
 export function PersonalInfoForm() {
   const { resume, setPersonalInfo } = useResumeStore();
@@ -8,6 +9,27 @@ export function PersonalInfoForm() {
 
   const handleChange = (field: keyof typeof personalInfo, value: string) => {
     setPersonalInfo({ [field]: value });
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image size must be less than 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPersonalInfo({ photoUrl: reader.result as string });
+        toast.success('Profile photo uploaded!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePhotoRemove = () => {
+    setPersonalInfo({ photoUrl: '' });
+    toast.success('Profile photo removed');
   };
 
   return (
@@ -24,6 +46,37 @@ export function PersonalInfoForm() {
       </div>
 
       <div className="space-y-4">
+        {/* Profile Photo Upload */}
+        <div className="flex items-center gap-6 p-4 rounded-xl border border-border bg-secondary/20">
+          <div className="relative group w-20 h-20 rounded-full bg-secondary border border-border overflow-hidden flex items-center justify-center">
+            {personalInfo.photoUrl ? (
+              <img src={personalInfo.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-8 h-8 text-muted-foreground" />
+            )}
+            <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+              <Camera className="w-5 h-5 text-white" />
+              <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handlePhotoUpload} className="hidden" />
+            </label>
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-sm font-medium">Profile Photo</h4>
+            <p className="text-xs text-muted-foreground">PNG, JPG or JPEG. Max 2MB.</p>
+            <div className="flex gap-2 mt-2">
+              <label className="btn-secondary py-1 px-3 text-xs flex items-center gap-1 cursor-pointer">
+                <span>Upload</span>
+                <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handlePhotoUpload} className="hidden" />
+              </label>
+              {personalInfo.photoUrl && (
+                <button onClick={handlePhotoRemove} className="btn-destructive py-1 px-3 text-xs flex items-center gap-1">
+                  <Trash2 className="w-3 h-3" />
+                  <span>Remove</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Full Name */}
         <div className="space-y-2">
           <label className="text-sm font-medium flex items-center gap-2">

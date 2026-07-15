@@ -7,7 +7,7 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20">
       {/* Spotlight effect */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] spotlight" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[400px] sm:h-[600px] spotlight" />
 
       <div className="max-w-5xl mx-auto text-center relative z-10">
         {/* Badge */}

@@ -12,6 +12,11 @@ import { ExperienceForm } from '@/components/editor/ExperienceForm';
 import { EducationForm } from '@/components/editor/EducationForm';
 import { ProjectsForm } from '@/components/editor/ProjectsForm';
 import { SkillsForm } from '@/components/editor/SkillsForm';
+import { CertificationsForm } from '@/components/editor/CertificationsForm';
+import { AchievementsForm } from '@/components/editor/AchievementsForm';
+import { DesignSection } from '@/components/editor/DesignSection';
+import { ATSSection } from '@/components/editor/ATSSection';
+
 import { TemplatesSection } from '@/components/editor/TemplatesSection';
 import { ResumePreview } from '@/components/editor/ResumePreview';
 import { useResumeStore } from '@/stores/resumeStore';
@@ -114,7 +119,7 @@ const Editor = () => {
           <div className="flex items-center gap-4">
             <Link
               to="/dashboard"
-              className="relative group hidden lg:flex items-center gap-2 font-medium transition-all duration-300"
+              className="relative group hidden md:flex items-center gap-2 font-medium transition-all duration-300"
             >
               <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent group-hover:from-purple-600 group-hover:to-pink-600 transition-all duration-300">
                 {user ? `My Resume (${user.name})` : 'My Resume'}
@@ -122,11 +127,11 @@ const Editor = () => {
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300" />
             </Link>
 
-            <div className="hidden lg:block h-6 w-px bg-border" />
+            <div className="hidden md:block h-6 w-px bg-border" />
 
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="btn-ghost hidden md:flex items-center gap-2 text-sm"
+              className="btn-ghost flex items-center gap-2 text-sm"
             >
               {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               <span className="hidden sm:inline">{showPreview ? 'Hide' : 'Show'} Preview</span>
@@ -152,7 +157,7 @@ const Editor = () => {
             {/* Mobile Menu Trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden">
+                <Button variant="ghost" size="icon" className="md:hidden">
                   <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
@@ -174,7 +179,7 @@ const Editor = () => {
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar - hidden on mobile */}
-        <div className="hidden lg:block">
+        <div className="hidden md:block">
           <EditorSidebar
             activeSection={activeSection}
             onSectionChange={setActiveSection}
@@ -183,10 +188,10 @@ const Editor = () => {
         </div>
 
         {/* Editor panel */}
-        <div className={`flex-1 flex ${showPreview && !isMobile ? 'lg:w-1/2' : 'w-full'}`}>
+        <div className={`flex-1 flex ${showPreview && !isMobile ? 'md:w-1/2' : 'w-full'} ${showPreview && isMobile ? 'hidden' : ''}`}>
 
           {/* Form content */}
-          <div className="flex-1 overflow-auto p-6 lg:p-8">
+          <div className="flex-1 overflow-auto p-6 md:p-8">
             <div className="max-w-2xl mx-auto">
               <motion.div
                 key={activeSection}
@@ -214,25 +219,15 @@ const Editor = () => {
                   Previous
                 </button>
 
-                {activeSection === 'templates' ? (
+                {activeSection === 'ats' ? (
                   <button
-                    onClick={async () => {
+                    onClick={() => {
                       setShowPreview(true);
-                      const { resume, setAtsScore } = useResumeStore.getState();
-                      try {
-                        // Calculate ATS Score
-                        const { calculateATSScore } = await import('@/lib/api');
-                        const { data } = await calculateATSScore(resume);
-                        setAtsScore(data.score);
-                        toast.success('Resume created and ATS score calculated!');
-                      } catch (e) {
-                        console.error(e);
-                        toast.error('Failed to calculate ATS score');
-                      }
+                      handleSaveClick();
                     }}
                     className="btn-primary"
                   >
-                    Create Resume
+                    Finish & Save Resume
                   </button>
                 ) : (
                   <button
@@ -254,12 +249,12 @@ const Editor = () => {
         </div>
 
         {/* Preview panel */}
-        {showPreview && !isMobile && (
+        {showPreview && (
           <motion.div
             initial={{ width: 0, opacity: 0 }}
-            animate={{ width: '50%', opacity: 1 }}
+            animate={{ width: isMobile ? '100%' : '50%', opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
-            className="hidden lg:block border-l border-border bg-muted/20 relative"
+            className={`border-l border-border bg-muted/20 relative ${!isMobile ? 'hidden md:block' : 'w-full block'}`}
           >
             {resume.atsScore !== undefined && (
               <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur p-2 rounded-lg border border-border shadow-sm">
