@@ -536,10 +536,7 @@
 }
 
 @media print {
-  /* Disable dynamic padding in print, rely on native browser pagination */
-  .break-inside-avoid[data-pushed="true"] {
-    margin-top: var(--orig-mt, initial) !important;
-  }
+  /* We intentionally keep the JS dynamic margin during print to override Chrome's buggy native pagination. */
 
   .page-mask {
     -webkit-mask-image: none !important;
