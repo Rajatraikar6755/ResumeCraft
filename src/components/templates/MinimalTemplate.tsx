@@ -1,4 +1,3 @@
-import { Mail, Phone, MapPin, Linkedin, Github, Globe } from 'lucide-react';
 import { ResumeData } from '@/stores/resumeStore';
 
 interface TemplateProps {
@@ -8,124 +7,57 @@ interface TemplateProps {
 export const MinimalTemplate = ({ resume }: TemplateProps) => {
     const { personalInfo, summary, experiences, education, projects, skills, certifications, achievements, sectionOrder } = resume;
 
-    const renderSection = (id: string) => {
+    const label = (text: string) => (
+        <h2 className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">{text}</h2>
+    );
+
+    // Sections that go in the LEFT narrow column
+    const leftSections = new Set(['skills', 'education', 'certifications']);
+    // Sections that go in the RIGHT wide column
+    const rightSections = new Set(['experience', 'projects', 'achievements']);
+
+    const renderLeft = (id: string) => {
         switch (id) {
-            case 'experience':
-                if (!experiences || experiences.length === 0) return null;
+            case 'skills':
+                if (!skills?.length) return null;
                 return (
-                    <section key="experience" className="mb-4">
-                        <h2 className="font-semibold text-lg mb-4">Experience</h2>
-                        <div className="space-y-3">
-                            {experiences.map((exp) => (
-                                <div key={exp.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{exp.position}</h3>
-                                            <p className="font-medium opacity-90">{exp.company}</p>
-                                        </div>
-                                        <span className="opacity-75">{exp.startDate} - {exp.endDate}</span>
-                                    </div>
-                                    {exp.bullets && exp.bullets.length > 0 && (
-                                        <ul className="list-disc list-outside ml-4 mt-1 space-y-0.5 opacity-80">
-                                            {exp.bullets.map((b, i) => <li key={i}>{b}</li>)}
-                                        </ul>
-                                    )}
-                                </div>
+                    <section key="skills" className="mb-7">
+                        {label('Skills')}
+                        <div className="flex flex-col gap-1.5">
+                            {skills.map((s, i) => (
+                                <span key={i} className="text-gray-700 text-sm leading-snug">{s}</span>
                             ))}
                         </div>
                     </section>
                 );
             case 'education':
-                if (!education || education.length === 0) return null;
+                if (!education?.length) return null;
                 return (
-                    <section key="education" className="mb-4">
-                        <h2 className="font-semibold text-lg mb-4">Education</h2>
-                        <div className="space-y-3">
+                    <section key="education" className="mb-7">
+                        {label('Education')}
+                        <div className="space-y-4">
                             {education.map((edu) => (
-                                <div key={edu.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{edu.degree} {edu.field && `in ${edu.field}`}</h3>
-                                            <p className="opacity-90">{edu.institution}</p>
-                                        </div>
-                                        <span className="opacity-75">{edu.startDate} - {edu.endDate}</span>
-                                    </div>
-                                    {edu.gpa && <p className="opacity-75 mt-0.5">GPA: {edu.gpa}</p>}
+                                <div key={edu.id}>
+                                    <h3 className="font-medium text-gray-900 text-sm leading-snug">{edu.institution}</h3>
+                                    <p className="text-gray-500 text-xs mt-0.5">{edu.degree}{edu.field && ` in ${edu.field}`}</p>
+                                    <p className="text-gray-400 text-xs">{edu.startDate} – {edu.endDate}</p>
+                                    {edu.gpa && <p className="text-gray-400 text-xs">GPA: {edu.gpa}</p>}
                                 </div>
-                            ))}
-                        </div>
-                    </section>
-                );
-            case 'projects':
-                if (!projects || projects.length === 0) return null;
-                return (
-                    <section key="projects" className="mb-4">
-                        <h2 className="font-semibold text-lg mb-4">Projects</h2>
-                        <div className="space-y-3">
-                            {projects.map((proj) => (
-                                <div key={proj.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
-                                    <div className="flex justify-between items-start">
-                                        <h3 className="font-semibold">{proj.name}</h3>
-                                        {proj.url && <span className="opacity-75">{proj.url}</span>}
-                                    </div>
-                                    <p className="opacity-80 mt-1">{proj.description}</p>
-                                    {proj.technologies && proj.technologies.length > 0 && (
-                                        <p className="opacity-75 mt-0.5">Tech: {proj.technologies.join(', ')}</p>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                );
-            case 'skills':
-                if (!skills || skills.length === 0) return null;
-                return (
-                    <section key="skills" className="mb-4">
-                        <h2 className="font-semibold text-lg mb-4">Skills</h2>
-                        <div className="flex flex-wrap gap-2">
-                            {skills.map((s, i) => (
-                                <span key={i} className="px-2 py-0.5 bg-black/5 rounded opacity-90">{s}</span>
                             ))}
                         </div>
                     </section>
                 );
             case 'certifications':
-                if (!certifications || certifications.length === 0) return null;
+                if (!certifications?.length) return null;
                 return (
-                    <section key="certifications" className="mb-4">
-                        <h2 className="font-semibold text-lg mb-4">Certifications</h2>
+                    <section key="certifications" className="mb-7">
+                        {label('Certifications')}
                         <div className="space-y-3">
                             {certifications.map((cert) => (
-                                <div key={cert.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{cert.name}</h3>
-                                            <p className="opacity-90">{cert.organization}</p>
-                                        </div>
-                                        <span className="opacity-75">{cert.issueDate}</span>
-                                    </div>
-                                    {cert.description && <p className="opacity-80 mt-1">{cert.description}</p>}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                );
-            case 'achievements':
-                if (!achievements || achievements.length === 0) return null;
-                return (
-                    <section key="achievements" className="mb-4">
-                        <h2 className="font-semibold text-lg mb-4">Achievements</h2>
-                        <div className="space-y-3">
-                            {achievements.map((ach) => (
-                                <div key={ach.id} className="break-inside-avoid border-l-2 border-gray-200 pl-4">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <h3 className="font-semibold">{ach.title}</h3>
-                                            <p className="opacity-90">{ach.organization}</p>
-                                        </div>
-                                        <span className="opacity-75">{ach.date}</span>
-                                    </div>
-                                    {ach.description && <p className="opacity-80 mt-1">{ach.description}</p>}
+                                <div key={cert.id}>
+                                    <h3 className="font-medium text-gray-900 text-sm leading-snug">{cert.name}</h3>
+                                    {cert.organization && <p className="text-gray-500 text-xs">{cert.organization}</p>}
+                                    {cert.issueDate && <p className="text-gray-400 text-xs">{cert.issueDate}</p>}
                                 </div>
                             ))}
                         </div>
@@ -136,40 +68,123 @@ export const MinimalTemplate = ({ resume }: TemplateProps) => {
         }
     };
 
-    return (
-        <div className="p-12 text-gray-900" style={{ fontSize: '1em' }}>
-            {/* Header */}
-            {personalInfo.fullName && (
-                <header className="pb-8 mb-8">
-                    <div className="flex items-center gap-6 justify-between">
-                        <div className="flex-1">
-                            <h1 style={{ fontSize: '2.5em', fontWeight: 'bold', lineHeight: 1.2, marginBottom: '0.25em' }}>{personalInfo.fullName}</h1>
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 opacity-80" style={{ fontSize: '0.85em' }}>
-                                {personalInfo.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {personalInfo.email}</span>}
-                                {personalInfo.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {personalInfo.phone}</span>}
-                                {personalInfo.location && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {personalInfo.location}</span>}
-                                {personalInfo.linkedin && <span className="flex items-center gap-1"><Linkedin className="w-3 h-3" /> {personalInfo.linkedin}</span>}
-                                {personalInfo.github && <span className="flex items-center gap-1"><Github className="w-3 h-3" /> {personalInfo.github}</span>}
-                                {personalInfo.portfolio && <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {personalInfo.portfolio}</span>}
-                            </div>
+    const renderRight = (id: string) => {
+        switch (id) {
+            case 'experience':
+                if (!experiences?.length) return null;
+                return (
+                    <section key="experience" className="mb-7">
+                        {label('Experience')}
+                        <div className="space-y-5">
+                            {experiences.map((exp) => (
+                                <div key={exp.id} className="break-inside-avoid">
+                                    <div className="flex justify-between items-baseline mb-0.5">
+                                        <h3 className="font-medium text-gray-900 text-sm">{exp.position}</h3>
+                                        <span className="text-xs text-gray-400 shrink-0 ml-2">{exp.startDate} – {exp.endDate}</span>
+                                    </div>
+                                    <p className="text-gray-500 text-xs mb-1.5">{exp.company}</p>
+                                    {exp.bullets?.length > 0 && (
+                                        <ul className="space-y-1">
+                                            {exp.bullets.map((b, i) => (
+                                                <li key={i} className="text-gray-600 text-sm flex items-start gap-2">
+                                                    <span className="text-gray-300 mt-1 shrink-0">—</span>
+                                                    {b}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                        {personalInfo.photoUrl && (
-                            <img src={personalInfo.photoUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover border-2 border-current" />
-                        )}
+                    </section>
+                );
+            case 'projects':
+                if (!projects?.length) return null;
+                return (
+                    <section key="projects" className="mb-7">
+                        {label('Projects')}
+                        <div className="space-y-4">
+                            {projects.map((proj) => (
+                                <div key={proj.id} className="break-inside-avoid">
+                                    <div className="flex items-baseline justify-between gap-2">
+                                        <h3 className="font-medium text-gray-900 text-sm">{proj.name}</h3>
+                                        {proj.url && <span className="text-xs text-gray-400 shrink-0">{proj.url}</span>}
+                                    </div>
+                                    {proj.description && <p className="text-gray-600 text-sm mt-0.5">{proj.description}</p>}
+                                    {proj.technologies?.length > 0 && (
+                                        <p className="text-xs text-gray-400 mt-1">{proj.technologies.join(', ')}</p>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            case 'achievements':
+                if (!achievements?.length) return null;
+                return (
+                    <section key="achievements" className="mb-7">
+                        {label('Achievements')}
+                        <div className="space-y-3">
+                            {achievements.map((ach) => (
+                                <div key={ach.id} className="break-inside-avoid">
+                                    <div className="flex items-baseline justify-between gap-2">
+                                        <h3 className="font-medium text-gray-900 text-sm">{ach.title}</h3>
+                                        {ach.date && <span className="text-xs text-gray-400 shrink-0">{ach.date}</span>}
+                                    </div>
+                                    {ach.organization && <p className="text-gray-500 text-xs">{ach.organization}</p>}
+                                    {ach.description && <p className="text-gray-600 text-sm mt-0.5">{ach.description}</p>}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            default:
+                return null;
+        }
+    };
+
+    const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications', 'achievements'];
+    const leftOrder = order.filter(id => leftSections.has(id));
+    const rightOrder = order.filter(id => rightSections.has(id));
+
+    return (
+        <div className="px-10 py-8 text-sm font-sans text-gray-800">
+            {/* ── Minimal header — name left-aligned, contact stacked ─ */}
+            {personalInfo.fullName && (
+                <header className="mb-8">
+                    <h1 className="text-4xl font-light tracking-tight text-gray-900 mb-3">{personalInfo.fullName}</h1>
+                    {personalInfo.jobTitle && (
+                        <p className="text-gray-500 text-sm mb-2">{personalInfo.jobTitle}</p>
+                    )}
+                    <div className="flex flex-col gap-0.5 text-xs text-gray-400">
+                        {personalInfo.email && <span>{personalInfo.email}</span>}
+                        {personalInfo.phone && <span>{personalInfo.phone}</span>}
+                        {personalInfo.location && <span>{personalInfo.location}</span>}
+                        <div className="flex gap-3 mt-1">
+                            {personalInfo.linkedin && <span>in/{personalInfo.linkedin}</span>}
+                            {personalInfo.github && <span>gh/{personalInfo.github}</span>}
+                            {personalInfo.portfolio && <span>{personalInfo.portfolio}</span>}
+                        </div>
                     </div>
+                    {/* thin rule */}
+                    <div className="border-b border-gray-200 mt-5" />
                 </header>
             )}
 
-            {/* Summary */}
+            {/* ── Summary (full-width above columns) ─────────────────── */}
             {summary && (
-                <section className="mb-4">
-                    <h2 className="font-semibold text-lg mb-4">Professional Summary</h2>
-                    <p className="opacity-90 leading-relaxed">{summary}</p>
-                </section>
+                <div className="mb-7">
+                    {label('Profile')}
+                    <p className="text-gray-600 leading-relaxed text-sm">{summary}</p>
+                    <div className="border-b border-gray-100 mt-5" />
+                </div>
             )}
 
-            {/* Dynamic Sections */}
-            {(sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications', 'achievements']).map(renderSection)}
+            {/* ── Two-column body: narrow left, wide right ──────────── */}
+            <div className="grid grid-cols-[1fr_2.2fr] gap-8">
+                <div>{leftOrder.map(renderLeft)}</div>
+                <div>{rightOrder.map(renderRight)}</div>
+            </div>
         </div>
     );
 };

@@ -474,47 +474,69 @@
   }
 }
 
+/* ── A4 Page Simulation ─────────────────────────────────────── */
 .a4-page {
   width: 210mm;
   min-height: 297mm;
   background: white;
   margin: 0 auto;
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 4px 24px -4px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
   overflow: hidden;
   position: relative;
 }
 
-/* Preview Page Simulation */
+.resume-page-gap {
+  height: 16px;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* Legacy single-container — kept for compat */
 .resume-preview-container {
   width: 210mm;
-  min-height: 297mm;
   background-color: white;
-  box-shadow: var(--shadow-card);
-  margin-bottom: 2rem;
-  /* Visual page break indicator - Gap style */
-  background-image: linear-gradient(to bottom, white 296mm, #e5e7eb 296mm, #e5e7eb 297mm, white 297mm);
-  background-size: 100% 297mm;
-  background-repeat: repeat-y;
-  position: relative;
 }
 
 @media print {
-  .resume-preview-container {
-    background-image: none;
-    box-shadow: none;
-    margin: 0;
-  }
-
   @page {
+    size: A4;
     margin: 0;
   }
 
-  body {
+  html, body {
+    margin: 0;
+    padding: 0;
     -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide all editor chrome */
+  header, nav, aside, .editor-sidebar, .no-print {
+    display: none !important;
+  }
+
+  /* Each A4 page prints on its own sheet */
+  .a4-page {
+    width: 210mm;
+    min-height: 297mm;
+    box-shadow: none;
+    overflow: visible;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .a4-page:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Hide the visual gaps between pages */
+  .resume-page-gap {
+    display: none;
   }
 }
 
 .break-inside-avoid {
   break-inside: avoid;
   page-break-inside: avoid;
-}
+}

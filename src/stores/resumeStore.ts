@@ -63,6 +63,8 @@ export interface ResumeData {
     linkedin?: string;
     github?: string;
     portfolio?: string;
+    jobTitle?: string;
+    photoUrl?: string;
   };
   summary: string;
   experiences: Experience[];
