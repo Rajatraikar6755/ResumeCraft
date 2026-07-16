@@ -474,24 +474,7 @@
   }
 }
 
-/* ── A4 Page Simulation ─────────────────────────────────────── */
-.a4-page {
-  width: 210mm;
-  min-height: 297mm;
-  background: white;
-  margin: 0 auto;
-  box-shadow: 0 4px 24px -4px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.15);
-  overflow: hidden;
-  position: relative;
-}
-
-.resume-page-gap {
-  height: 16px;
-  background: transparent;
-  flex-shrink: 0;
-}
-
-/* Legacy single-container — kept for compat */
+/* ── A4 Page Simulation (Continuous) ────────────────────────── */
 .resume-preview-container {
   width: 210mm;
   background-color: white;
@@ -515,24 +498,14 @@
     display: none !important;
   }
 
-  /* Each A4 page prints on its own sheet */
-  .a4-page {
+  /* Hide the visual page break lines during print */
+  .page-break-indicator {
+    display: none !important;
+  }
+
+  .resume-preview-container {
+    box-shadow: none !important;
     width: 210mm;
-    min-height: 297mm;
-    box-shadow: none;
-    overflow: visible;
-    page-break-after: always;
-    break-after: page;
-  }
-
-  .a4-page:last-child {
-    page-break-after: avoid;
-    break-after: avoid;
-  }
-
-  /* Hide the visual gaps between pages */
-  .resume-page-gap {
-    display: none;
   }
 }
 

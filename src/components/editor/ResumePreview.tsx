@@ -12,9 +12,8 @@ const templates = {
   creative: CreativeTemplate,
 };
 
-// A4 dimensions in pixels at 96 DPI
-const A4_HEIGHT_PX = 1122; // 297mm × 3.7795 px/mm
 const A4_WIDTH_MM = 210;
+const A4_HEIGHT_MM = 297;
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const resume = useResumeStore((state) => state.resume);
@@ -24,12 +23,9 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     resume.experiences.length > 0;
 
   const [scale, setScale] = useState(1);
-  const [pageCount, setPageCount] = useState(1);
-
-  // Hidden div used purely to measure the rendered template height
-  const measureRef = useRef<HTMLDivElement>(null);
-  // Outer container used for scale calculation
+  const [contentHeightPx, setContentHeightPx] = useState(1122); // Default 1 page height approx
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // ── Scale calculation ──────────────────────────────────────────
   const calcScale = useCallback(() => {
@@ -46,15 +42,15 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     return () => ro.disconnect();
   }, [calcScale]);
 
-  // ── Page count calculation ─────────────────────────────────────
+  // ── Height measurement for visual page breaks ──────────────────
   useEffect(() => {
-    if (!measureRef.current) return;
+    if (!contentRef.current) return;
     const ro = new ResizeObserver(() => {
-      if (!measureRef.current) return;
-      const h = measureRef.current.scrollHeight;
-      setPageCount(Math.max(1, Math.ceil(h / A4_HEIGHT_PX)));
+      if (contentRef.current) {
+        setContentHeightPx(contentRef.current.scrollHeight);
+      }
     });
-    ro.observe(measureRef.current);
+    ro.observe(contentRef.current);
     return () => ro.disconnect();
   }, [resume]);
 
@@ -69,79 +65,67 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     fontSize: `calc(14px * ${resume.fontSizeScale || 1.0})`,
   };
 
+  const a4HeightPx = (A4_HEIGHT_MM / 25.4) * 96;
+  const numPages = Math.max(1, Math.ceil(contentHeightPx / a4HeightPx));
+
   return (
     <div
       ref={containerRef}
       className="h-full overflow-y-auto p-4 lg:p-8 bg-muted/20 custom-scrollbar flex flex-col items-center"
     >
-      {/* ── Hidden measurement node (renders at full 1:1 scale, off-screen) ── */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: '-9999px',
-          top: 0,
-          width: `${(A4_WIDTH_MM / 25.4) * 96}px`,
-          pointerEvents: 'none',
-          zIndex: -1,
-        }}
-      >
-        <div ref={measureRef} style={fontStyle}>
-          {hasContent && <TemplateComponent resume={resume} />}
-        </div>
-      </div>
-
-      {/* ── Visible paginated output ─────────────────────────────── */}
       <div
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'top center',
-          /* push siblings down so the scaled content doesn't overlap */
-          marginBottom: `calc(${pageCount} * 297mm * ${scale} - ${pageCount} * 297mm)`,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 0,
+          marginBottom: `calc(${contentHeightPx}px * ${scale} - ${contentHeightPx}px)`, // Adjust container height for scale
         }}
       >
-        {Array.from({ length: pageCount }).map((_, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {/* Page gap (not shown on first page) */}
-            {i > 0 && <div className="resume-page-gap" />}
+        <div
+          ref={ref as any}
+          className="resume-preview-container print-continuous"
+          style={{
+            ...fontStyle,
+            width: `${A4_WIDTH_MM}mm`,
+            minHeight: `${A4_HEIGHT_MM}mm`,
+            position: 'relative',
+            backgroundColor: 'white',
+            boxShadow: '0 4px 24px -4px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div ref={contentRef} className="h-full">
+            {hasContent ? (
+              <TemplateComponent resume={resume} />
+            ) : (
+              <div className="flex flex-col items-center justify-center min-h-[297mm] text-gray-400">
+                <svg className="w-16 h-16 mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p className="text-sm">Start editing to see your resume</p>
+              </div>
+            )}
+          </div>
 
-            {/* A4 page */}
+          {/* Visual page break indicators (hidden in print) */}
+          {Array.from({ length: numPages - 1 }).map((_, i) => (
             <div
-              ref={i === 0 ? (ref as React.RefObject<HTMLDivElement>) : undefined}
-              className="a4-page"
+              key={i}
+              className="page-break-indicator"
               style={{
-                ...fontStyle,
-                overflow: 'hidden',
-                height: '297mm',
+                position: 'absolute',
+                top: `${(i + 1) * A4_HEIGHT_MM}mm`,
+                left: 0,
+                right: 0,
+                borderTop: '2px dashed #cbd5e1',
+                zIndex: 50,
+                pointerEvents: 'none',
               }}
             >
-              {/* Clip content to the correct page using a shifted inner wrapper */}
-              <div
-                style={{
-                  position: 'relative',
-                  top: `-${i * 100}%`,          // shift by one page height per page
-                  height: `${pageCount * 100}%`, // total content height spans all pages
-                  overflow: 'hidden',
-                }}
-              >
-                {hasContent ? (
-                  <TemplateComponent resume={resume} />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                    <svg className="w-16 h-16 mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <p className="text-sm">Start editing to see your resume</p>
-                  </div>
-                )}
+              <div className="absolute -top-3 right-4 bg-white px-2 text-xs font-bold text-slate-400 uppercase tracking-widest border border-slate-200 rounded-full shadow-sm">
+                Page Break
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
