@@ -73,6 +73,11 @@ export interface ResumeData {
   atsScore?: number;
   atsFeedback?: string;
   createdAt?: string;
+  certifications?: Certification[];
+  achievements?: Achievement[];
+  fontFamily?: string;
+  fontSizeScale?: number;
+  sectionOrder?: string[];
 }
 
 interface ResumeState {
@@ -134,6 +139,11 @@ const initialResume: ResumeData = {
   projects: [],
   skills: [],
   template: 'modern',
+  certifications: [],
+  achievements: [],
+  fontFamily: 'Inter',
+  fontSizeScale: 1.0,
+  sectionOrder: ['experience', 'education', 'skills', 'projects', 'certifications', 'achievements'],
 };
 
 export const useResumeStore = create<ResumeState>((set, get) => ({
@@ -248,6 +258,83 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
 
   setActiveSection: (activeSection) => set({ activeSection }),
 
+  addCertification: (cert) =>
+    set((state) => ({
+      resume: {
+        ...state.resume,
+        certifications: [...(state.resume.certifications || []), cert],
+      },
+    })),
+
+  updateCertification: (id, cert) =>
+    set((state) => ({
+      resume: {
+        ...state.resume,
+        certifications: (state.resume.certifications || []).map((c) =>
+          c.id === id ? { ...c, ...cert } : c
+        ),
+      },
+    })),
+
+  removeCertification: (id) =>
+    set((state) => ({
+      resume: {
+        ...state.resume,
+        certifications: (state.resume.certifications || []).filter((c) => c.id !== id),
+      },
+    })),
+
+  reorderCertifications: (certifications) =>
+    set((state) => ({
+      resume: { ...state.resume, certifications },
+    })),
+
+  addAchievement: (achievement) =>
+    set((state) => ({
+      resume: {
+        ...state.resume,
+        achievements: [...(state.resume.achievements || []), achievement],
+      },
+    })),
+
+  updateAchievement: (id, achievement) =>
+    set((state) => ({
+      resume: {
+        ...state.resume,
+        achievements: (state.resume.achievements || []).map((a) =>
+          a.id === id ? { ...a, ...achievement } : a
+        ),
+      },
+    })),
+
+  removeAchievement: (id) =>
+    set((state) => ({
+      resume: {
+        ...state.resume,
+        achievements: (state.resume.achievements || []).filter((a) => a.id !== id),
+      },
+    })),
+
+  reorderAchievements: (achievements) =>
+    set((state) => ({
+      resume: { ...state.resume, achievements },
+    })),
+
+  setFontFamily: (fontFamily) =>
+    set((state) => ({
+      resume: { ...state.resume, fontFamily },
+    })),
+
+  setFontSizeScale: (fontSizeScale) =>
+    set((state) => ({
+      resume: { ...state.resume, fontSizeScale },
+    })),
+
+  setSectionOrder: (sectionOrder) =>
+    set((state) => ({
+      resume: { ...state.resume, sectionOrder },
+    })),
+
   resetResume: () => set({
     resume: {
       ...initialResume,
@@ -309,6 +396,11 @@ export const useResumeStore = create<ResumeState>((set, get) => ({
       const content = data.content as ResumeData;
       set({
         resume: {
+          fontFamily: 'Inter',
+          fontSizeScale: 1.0,
+          sectionOrder: ['experience', 'education', 'skills', 'projects', 'certifications', 'achievements'],
+          certifications: [],
+          achievements: [],
           ...content,
           id: data.id,
           title: data.name,
