@@ -151,7 +151,7 @@ export const MinimalTemplate = ({ resume }: TemplateProps) => {
         <div className="px-10 py-8 text-sm font-sans text-gray-800">
             {/* ── Minimal header — name left-aligned, contact stacked ─ */}
             {personalInfo.fullName && (
-                <header className="mb-8">
+                <div className="mb-8">
                     <h1 className="text-4xl font-light tracking-tight text-gray-900 mb-3">{personalInfo.fullName}</h1>
                     {personalInfo.jobTitle && (
                         <p className="text-gray-500 text-sm mb-2">{personalInfo.jobTitle}</p>
@@ -168,7 +168,7 @@ export const MinimalTemplate = ({ resume }: TemplateProps) => {
                     </div>
                     {/* thin rule */}
                     <div className="border-b border-gray-200 mt-5" />
-                </header>
+                </div>
             )}
 
             {/* ── Summary (full-width above columns) ─────────────────── */}

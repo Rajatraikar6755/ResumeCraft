@@ -140,7 +140,7 @@ export const ClassicTemplate = ({ resume }: TemplateProps) => {
         <div className="px-10 py-8 text-sm font-serif text-gray-900">
             {/* ── Centered header with double rule ─────────────────── */}
             {personalInfo.fullName && (
-                <header className="text-center mb-6">
+                <div className="text-center mb-6">
                     <h1 className="text-2xl font-bold uppercase tracking-widest mb-3">{personalInfo.fullName}</h1>
                     <div className="border-t-2 border-b border-black py-1.5 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-gray-700">
                         {personalInfo.email && <span>{personalInfo.email}</span>}
@@ -150,7 +150,7 @@ export const ClassicTemplate = ({ resume }: TemplateProps) => {
                         {personalInfo.github && <span>{personalInfo.github}</span>}
                         {personalInfo.portfolio && <span>{personalInfo.portfolio}</span>}
                     </div>
-                </header>
+                </div>
             )}
 
             {/* ── Summary ───────────────────────────────────────────── */}

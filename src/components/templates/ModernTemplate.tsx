@@ -161,7 +161,7 @@ export const ModernTemplate = ({ resume }: TemplateProps) => {
         <div className="text-sm text-gray-800">
             {/* ── Colored header band ──────────────────────────────── */}
             {personalInfo.fullName && (
-                <header className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-10 py-7">
+                <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white px-10 py-7">
                     <div className="flex items-center gap-6 justify-between">
                         <div className="flex-1 min-w-0">
                             <h1 className="text-3xl font-bold tracking-tight leading-tight">{personalInfo.fullName}</h1>
@@ -181,7 +181,7 @@ export const ModernTemplate = ({ resume }: TemplateProps) => {
                             <img src={personalInfo.photoUrl} alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white/30 shrink-0" />
                         )}
                     </div>
-                </header>
+                </div>
             )}
 
             {/* ── Body content ─────────────────────────────────────── */}
