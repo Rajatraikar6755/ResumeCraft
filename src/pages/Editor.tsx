@@ -46,7 +46,11 @@ const sectionComponents: Record<string, React.ComponentType> = {
   education: EducationForm,
   projects: ProjectsForm,
   skills: SkillsForm,
+  certifications: CertificationsForm,
+  achievements: AchievementsForm,
+  design: DesignSection,
   templates: TemplatesSection,
+  ats: ATSSection,
 };
 
 const Editor = () => {
