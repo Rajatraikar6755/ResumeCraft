@@ -512,4 +512,41 @@
 .break-inside-avoid {
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+.page-mask {
+  -webkit-mask-image: repeating-linear-gradient(
+    to bottom,
+    black 0,
+    black calc(297mm - 16px),
+    transparent calc(297mm - 16px),
+    transparent 297mm
+  );
+  mask-image: repeating-linear-gradient(
+    to bottom,
+    black 0,
+    black calc(297mm - 16px),
+    transparent calc(297mm - 16px),
+    transparent 297mm
+  );
+}
+
+.print-shadow-wrapper {
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+}
+
+@media print {
+  /* Disable dynamic padding in print, rely on native browser pagination */
+  .break-inside-avoid[data-pushed="true"] {
+    margin-top: var(--orig-mt, initial) !important;
+  }
+
+  .page-mask {
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+
+  .print-shadow-wrapper {
+    filter: none !important;
+  }
 }

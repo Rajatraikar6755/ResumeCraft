@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState, useCallback } from 'react';
+import { forwardRef, useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useResumeStore } from '@/stores/resumeStore';
 import { ModernTemplate } from '@/components/templates/ModernTemplate';
 import { ClassicTemplate } from '@/components/templates/ClassicTemplate';
@@ -42,16 +42,66 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     return () => ro.disconnect();
   }, [calcScale]);
 
-  // ── Height measurement for visual page breaks ──────────────────
-  useEffect(() => {
+  // ── JS Pagination ────────────────────────────────────────────────
+  const getTopRelativeTo = (el: HTMLElement, container: HTMLElement) => {
+    let top = 0;
+    let current: HTMLElement | null = el;
+    while (current && current !== container) {
+      top += current.offsetTop;
+      current = current.offsetParent as HTMLElement;
+    }
+    return top;
+  };
+
+  useLayoutEffect(() => {
     if (!contentRef.current) return;
-    const ro = new ResizeObserver(() => {
-      if (contentRef.current) {
-        setContentHeightPx(contentRef.current.scrollHeight);
+    const container = contentRef.current;
+    
+    const elements = container.querySelectorAll('.break-inside-avoid');
+    
+    // 1. Reset dynamic margins
+    elements.forEach((el: any) => {
+      if (!el.hasAttribute('data-orig-mt')) {
+        el.setAttribute('data-orig-mt', window.getComputedStyle(el).marginTop);
+      }
+      el.style.marginTop = el.getAttribute('data-orig-mt');
+      el.removeAttribute('data-pushed');
+    });
+
+    // Force layout
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    container.offsetHeight; 
+
+    const a4HeightPx = (A4_HEIGHT_MM / 25.4) * 96; // 1122.52px
+    
+    // 2. Measure and push elements
+    elements.forEach((el: any) => {
+      const top = getTopRelativeTo(el, container);
+      const height = el.offsetHeight;
+      
+      const bottomMargin = 40; 
+      const topMargin = 40;    
+      
+      const startPage = Math.floor(top / a4HeightPx);
+      const pageEnd = (startPage + 1) * a4HeightPx - bottomMargin;
+      
+      if (top + height > pageEnd) {
+        const nextPageStart = (startPage + 1) * a4HeightPx + topMargin;
+        const requiredPush = Math.max(0, nextPageStart - top);
+        
+        if (requiredPush > 0) {
+          const origMt = parseFloat(el.getAttribute('data-orig-mt')) || 0;
+          el.style.setProperty('--orig-mt', `${origMt}px`);
+          el.style.setProperty('--dynamic-mt', `${origMt + requiredPush}px`);
+          el.style.marginTop = 'var(--dynamic-mt)';
+          el.setAttribute('data-pushed', 'true');
+        }
       }
     });
-    ro.observe(contentRef.current);
-    return () => ro.disconnect();
+
+    // 3. Measure total pages
+    const totalHeight = container.scrollHeight;
+    setContentHeightPx(Math.max(a4HeightPx, totalHeight));
   }, [resume]);
 
   const TemplateComponent = templates[resume.template] || ModernTemplate;
@@ -71,9 +121,10 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   return (
     <div
       ref={containerRef}
-      className="h-full overflow-y-auto p-4 lg:p-8 bg-muted/20 custom-scrollbar flex flex-col items-center"
+      className="h-full overflow-y-auto p-4 lg:p-8 bg-slate-200 custom-scrollbar flex flex-col items-center"
     >
       <div
+        className="print-shadow-wrapper"
         style={{
           transform: `scale(${scale})`,
           transformOrigin: 'top center',
@@ -82,17 +133,16 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       >
         <div
           ref={ref as any}
-          className="resume-preview-container print-continuous"
+          className="resume-preview-container page-mask"
           style={{
             ...fontStyle,
             width: `${A4_WIDTH_MM}mm`,
             minHeight: `${A4_HEIGHT_MM}mm`,
             position: 'relative',
             backgroundColor: 'white',
-            boxShadow: '0 4px 24px -4px rgba(0,0,0,0.3)',
           }}
         >
-          <div ref={contentRef} className="h-full">
+          <div ref={contentRef} className="h-full relative">
             {hasContent ? (
               <TemplateComponent resume={resume} />
             ) : (
@@ -104,27 +154,6 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
             )}
           </div>
-
-          {/* Visual page break indicators (hidden in print) */}
-          {Array.from({ length: numPages - 1 }).map((_, i) => (
-            <div
-              key={i}
-              className="page-break-indicator"
-              style={{
-                position: 'absolute',
-                top: `${(i + 1) * A4_HEIGHT_MM}mm`,
-                left: 0,
-                right: 0,
-                borderTop: '2px dashed #cbd5e1',
-                zIndex: 50,
-                pointerEvents: 'none',
-              }}
-            >
-              <div className="absolute -top-3 right-4 bg-white px-2 text-xs font-bold text-slate-400 uppercase tracking-widest border border-slate-200 rounded-full shadow-sm">
-                Page Break
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

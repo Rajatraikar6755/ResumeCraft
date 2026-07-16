@@ -172,7 +172,7 @@ export const CreativeTemplate = ({ resume }: TemplateProps) => {
     return (
         <div className="flex min-h-full text-sm">
             {/* ── Dark sidebar (1/3) ───────────────────────────────── */}
-            <aside className="w-[35%] bg-slate-900 text-slate-200 px-6 py-8 flex flex-col gap-0">
+            <div className="w-[35%] bg-slate-900 text-slate-200 px-6 py-8 flex flex-col gap-0">
                 {/* Avatar */}
                 <div className="text-center mb-6">
                     {personalInfo.photoUrl ? (
@@ -234,7 +234,7 @@ export const CreativeTemplate = ({ resume }: TemplateProps) => {
 
                 {/* Sidebar sections */}
                 {sidebarOrder.map(renderSidebar)}
-            </aside>
+            </div>
 
             {/* ── White main content (2/3) ─────────────────────────── */}
             <main className="flex-1 bg-white px-8 py-8 space-y-0">
